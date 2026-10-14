@@ -19,9 +19,6 @@
   </script>
 
   <style>
-    /* ============================================================
-       VARIABLES DE DESIGN — IDENTIQUES À LA VERSION DESKTOP
-       ============================================================ */
     :root {
       --bg: #131314;
       --bg-elev: #1e1f20;
@@ -38,21 +35,15 @@
       --accent: #8ab4f8;
       --accent-strong: #4285f4;
       --accent-soft: rgba(138, 180, 248, 0.12);
-      --gradient: linear-gradient(135deg, #4285f4 0%, #9b72cb 50%, #f0a14a 100%);
-      --user-bubble: #333537;
+      --user-bubble: #2f3032;
       --radius-lg: 28px;
       --radius-md: 16px;
       --radius-sm: 10px;
       --shadow-up: 0 -8px 32px rgba(0, 0, 0, 0.4);
       --safe-top: env(safe-area-inset-top);
       --safe-bottom: env(safe-area-inset-bottom);
-      --safe-left: env(safe-area-inset-left);
-      --safe-right: env(safe-area-inset-right);
     }
 
-    /* ============================================================
-       RESET & BASE
-       ============================================================ */
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -99,13 +90,6 @@
       border-radius: 99px;
     }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: #4a4b4d;
-    }
-
-    /* ============================================================
-       LAYOUT PRINCIPAL
-       ============================================================ */
     .alu-app {
       display: grid;
       grid-template-columns: 280px 1fr;
@@ -115,14 +99,14 @@
       position: relative;
     }
 
-    /* ============================================================
-       SIDEBAR
-       ============================================================ */
+    /* ========== SIDEBAR AVEC GLASSMORPHISM ========== */
     .alu-sidebar {
       display: flex;
       flex-direction: column;
-      background: var(--sidebar);
-      border-right: 1px solid var(--border-soft);
+      background: rgba(30, 31, 32, 0.72);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
       padding: 12px 8px;
       gap: 6px;
       overflow: hidden;
@@ -149,12 +133,9 @@
       height: 32px;
       display: grid;
       place-items: center;
-      font-size: 1.5rem;
-      font-weight: bold;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #8ab4f8;
     }
 
     .alu-brand-name {
@@ -171,17 +152,16 @@
       width: 100%;
       padding: 12px 16px;
       border-radius: 999px;
-      background: var(--surface-active);
+      background: rgba(51, 53, 55, 0.85);
       color: var(--text);
       font-size: 0.92rem;
       font-weight: 500;
-      transition: background 160ms ease, transform 160ms ease;
+      transition: background 160ms ease;
       margin: 6px 0 4px;
     }
 
     .alu-new-chat:hover {
       background: #3d4042;
-      transform: translateY(-1px);
     }
 
     .alu-nav-items {
@@ -205,7 +185,7 @@
     }
 
     .alu-nav-item:hover {
-      background: var(--surface-hover);
+      background: rgba(255, 255, 255, 0.06);
     }
 
     .alu-history-section {
@@ -223,7 +203,6 @@
       font-size: 0.8rem;
       color: var(--muted);
       font-weight: 500;
-      letter-spacing: 0.02em;
     }
 
     .alu-history-list {
@@ -241,28 +220,25 @@
       color: var(--muted-dim);
     }
 
-    /* Historique premium */
     .alu-history-item-container {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background-color: #1e1f20;
+      background-color: rgba(30, 31, 32, 0.6);
       border: 1px solid transparent;
       border-radius: 12px;
       padding: 8px 12px;
       margin-bottom: 6px;
       transition: all 0.2s ease;
-      position: relative;
     }
 
     .alu-history-item-container:hover {
-      background-color: #2a2b2d;
+      background-color: rgba(42, 43, 45, 0.8);
       border-color: #303133;
     }
 
     .alu-history-item-container.pinned {
-      border-color: rgba(138, 180, 248, 0.4);
-      background-color: rgba(30, 31, 32, 0.8);
+      border-color: rgba(138, 180, 248, 0.35);
     }
 
     .alu-history-btn-text {
@@ -283,11 +259,6 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      opacity: 0.4;
-      transition: opacity 0.2s ease;
-    }
-
-    .alu-history-item-container:hover .alu-history-actions {
       opacity: 1;
     }
 
@@ -320,7 +291,7 @@
       flex-direction: column;
       gap: 8px;
       padding: 8px;
-      border-top: 1px solid var(--border-soft);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       margin-top: 6px;
     }
 
@@ -328,7 +299,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 6px 6px;
+      padding: 6px;
     }
 
     .alu-avatar {
@@ -337,11 +308,11 @@
       border-radius: 999px;
       overflow: hidden;
       flex-shrink: 0;
-      background: #f59e0b;
+      background: #3b82f6;
       display: grid;
       place-items: center;
       color: white;
-      font-weight: bold;
+      font-weight: 600;
       font-size: 0.85rem;
     }
 
@@ -367,13 +338,12 @@
       height: 32px;
       border-radius: 999px;
       color: var(--muted);
-      transition: background 140ms ease, color 140ms ease, transform 200ms ease;
+      transition: background 140ms ease, color 140ms ease;
     }
 
     .alu-settings-btn:hover {
-      background: var(--surface-hover);
+      background: rgba(255, 255, 255, 0.08);
       color: var(--text);
-      transform: rotate(60deg);
     }
 
     .alu-loc-block {
@@ -412,9 +382,7 @@
       color: var(--accent);
     }
 
-    /* ============================================================
-       MAIN AREA + GLASSMORPHISM
-       ============================================================ */
+    /* ========== MAIN ========== */
     .alu-main {
       position: relative !important;
       display: grid;
@@ -428,17 +396,16 @@
       top: 0 !important;
       left: 0 !important;
       right: 0 !important;
-      height: 64px !important;
+      height: 60px !important;
       z-index: 30 !important;
       background: rgba(30, 31, 32, 0.55) !important;
       backdrop-filter: blur(20px) saturate(180%) !important;
       -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      padding: 0 14px;
     }
 
     .alu-topbar-left {
@@ -447,32 +414,32 @@
       gap: 8px;
     }
 
+    /* Bouton upgrade agrandi */
     .alu-upgrade-btn {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 18px;
+      padding: 11px 18px;
       border-radius: 999px;
-      background: linear-gradient(135deg, #1f6feb, #0f4ec6);
+      background: #2563eb;
       color: white;
       font-weight: 500;
       font-size: 0.9rem;
-      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
-      box-shadow: 0 4px 14px rgba(15, 78, 198, 0.4);
+      transition: transform 180ms ease, filter 180ms ease;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     }
 
     .alu-upgrade-btn:hover {
       transform: translateY(-1px);
-      filter: brightness(1.1);
-      box-shadow: 0 8px 24px rgba(15, 78, 198, 0.5);
+      filter: brightness(1.08);
     }
 
     .alu-conversation {
       position: relative !important;
       height: 100% !important;
       overflow-y: auto !important;
-      padding-top: 80px !important;
-      padding-bottom: 160px !important;
+      padding-top: 72px !important;
+      padding-bottom: 150px !important;
       background: transparent !important;
       -webkit-overflow-scrolling: touch;
     }
@@ -488,31 +455,27 @@
 
     .alu-welcome-title {
       margin: 0;
-      font-size: clamp(1.8rem, 6vw, 3.2rem);
+      font-size: clamp(1.6rem, 6vw, 2.8rem);
       font-weight: 400;
       letter-spacing: -0.02em;
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #e3e3e3;
       text-align: center;
-      animation: alu-welcome-in 700ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .alu-messages {
       width: min(820px, 100%);
       margin: 0 auto;
-      padding: 20px 16px 40px;
+      padding: 16px 14px 40px;
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 22px;
     }
 
-    /* Messages */
+    /* ========== MESSAGES ========== */
     .alu-msg {
       display: flex;
-      gap: 14px;
-      animation: alu-msg-in 380ms cubic-bezier(0.22, 1, 0.36, 1);
+      gap: 12px;
+      animation: alu-msg-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .alu-msg-user {
@@ -523,6 +486,7 @@
       justify-content: flex-start;
     }
 
+    /* Avatar IA sobre (plus de gradient ni d’étoile) */
     .alu-msg-avatar {
       flex-shrink: 0;
       width: 32px;
@@ -530,11 +494,11 @@
       border-radius: 999px;
       display: grid;
       place-items: center;
-      background: var(--bg-elev);
-      border: 1px solid var(--border);
-      font-size: 12px;
-      font-weight: bold;
-      color: white;
+      background: #2a2b2d;
+      border: 1px solid #3a3b3d;
+      color: #9aa0a6;
+      font-size: 13px;
+      font-weight: 600;
     }
 
     .alu-msg-body {
@@ -542,23 +506,31 @@
       max-width: 100%;
     }
 
+    /* Correction du stretch des messages utilisateur */
     .alu-msg-user .alu-msg-body {
       background: var(--user-bubble);
-      padding: 12px 18px;
-      border-radius: 24px;
-      max-width: 85%;
+      padding: 10px 16px;
+      border-radius: 20px;
+      max-width: fit-content;
+      width: auto;
     }
 
     .alu-msg-assistant .alu-msg-body {
       flex: 1;
       min-width: 0;
+      max-width: 92%;
     }
 
     .alu-msg-content {
       font-size: 0.95rem;
-      line-height: 1.65;
+      line-height: 1.6;
       color: var(--text);
       word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .alu-msg-user .alu-msg-content {
+      white-space: pre-wrap;
     }
 
     .alu-msg-content h1,
@@ -566,22 +538,26 @@
     .alu-msg-content h3 {
       font-weight: 600;
       color: #ffffff;
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
+      margin-top: 0.9rem;
+      margin-bottom: 0.4rem;
     }
 
-    .alu-msg-content h1 { font-size: 1.45rem; }
-    .alu-msg-content h2 { font-size: 1.25rem; }
-    .alu-msg-content h3 { font-size: 1.1rem; }
+    .alu-msg-content h1 { font-size: 1.35rem; }
+    .alu-msg-content h2 { font-size: 1.2rem; }
+    .alu-msg-content h3 { font-size: 1.05rem; }
 
     .alu-msg-content p {
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.7rem;
+    }
+
+    .alu-msg-content p:last-child {
+      margin-bottom: 0;
     }
 
     .alu-msg-content ul,
     .alu-msg-content ol {
-      margin-left: 1.5rem;
-      margin-bottom: 0.75rem;
+      margin-left: 1.4rem;
+      margin-bottom: 0.7rem;
     }
 
     .alu-msg-content ul { list-style-type: disc; }
@@ -591,7 +567,7 @@
     .alu-msg-content table {
       width: 100%;
       border-collapse: collapse;
-      margin: 1rem 0;
+      margin: 0.9rem 0;
       font-size: 0.85rem;
       background-color: #1a1b1c;
       border-radius: 8px;
@@ -601,7 +577,7 @@
     .alu-msg-content th,
     .alu-msg-content td {
       border: 1px solid #303133;
-      padding: 10px 12px;
+      padding: 9px 11px;
       text-align: left;
     }
 
@@ -625,9 +601,9 @@
     }
 
     .alu-msg-content pre {
-      margin: 12px 0;
-      padding: 14px;
-      border-radius: 12px;
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 10px;
       background: #0d0e0f;
       border: 1px solid var(--border);
       overflow-x: auto;
@@ -649,7 +625,7 @@
 
     .alu-msg-content blockquote {
       margin: 10px 0;
-      padding-left: 14px;
+      padding-left: 12px;
       border-left: 3px solid var(--accent);
       color: var(--text-soft);
     }
@@ -659,7 +635,6 @@
       font-weight: 600;
     }
 
-    /* Source badges */
     .alu-source-badge {
       display: inline-flex;
       align-items: center;
@@ -685,9 +660,7 @@
       border-radius: 2px;
     }
 
-    /* ============================================================
-       COMPOSER (BARRE DE SAISIE)
-       ============================================================ */
+    /* ========== COMPOSER ========== */
     .alu-composer-wrap {
       position: absolute !important;
       bottom: 0 !important;
@@ -705,9 +678,9 @@
       background: rgba(38, 39, 41, 0.78) !important;
       backdrop-filter: blur(24px) saturate(180%) !important;
       -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.14) !important;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-      border-radius: 24px !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
+      border-radius: 22px !important;
       padding: 8px !important;
       width: 100%;
       max-width: 820px;
@@ -724,10 +697,10 @@
       outline: 0;
       background: transparent;
       color: var(--text);
-      padding: 12px 14px 6px;
+      padding: 11px 14px 5px;
       font-size: 1rem;
       line-height: 1.5;
-      max-height: 160px;
+      max-height: 150px;
       min-height: 28px;
       font-family: inherit;
     }
@@ -740,47 +713,41 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 4px 4px 4px 4px;
+      padding: 3px 3px;
     }
 
     .alu-composer-tools-left,
     .alu-composer-tools-right {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       position: relative;
     }
 
     .alu-tool-btn {
       display: grid;
       place-items: center;
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border-radius: 999px;
       color: var(--text-soft);
-      transition: background 140ms ease, color 140ms ease, transform 180ms ease;
+      transition: background 140ms ease, color 140ms ease;
     }
 
     .alu-tool-btn:hover {
-      background: var(--surface-hover);
+      background: rgba(255, 255, 255, 0.08);
       color: var(--text);
-    }
-
-    .alu-attach-btn:hover {
-      transform: rotate(45deg) scale(1.05);
-      background: var(--accent-soft);
-      color: var(--accent);
     }
 
     .alu-model-pill {
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 12px;
+      padding: 7px 12px;
       border-radius: 999px;
       background: #2a2b2d;
       color: var(--text-soft);
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       font-weight: 500;
       transition: background 140ms ease;
       cursor: pointer;
@@ -793,16 +760,16 @@
     .alu-send-btn {
       display: grid;
       place-items: center;
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border-radius: 999px;
       background: #333537;
       color: #7a7e84;
-      transition: transform 180ms ease, background 160ms ease, opacity 160ms ease;
+      transition: background 160ms ease, opacity 160ms ease;
     }
 
     .alu-send-btn:not(:disabled) {
-      background: white;
+      background: #e3e3e3;
       color: #0d0e0f;
     }
 
@@ -811,22 +778,21 @@
       cursor: not-allowed;
     }
 
-    /* Menu modèles en bas */
     .alu-model-menu-bottom {
       position: absolute;
       bottom: 110%;
       right: 0;
       background-color: #1e1f20;
       border: 1px solid #303133;
-      border-radius: 16px;
-      padding: 8px;
-      width: 240px;
+      border-radius: 14px;
+      padding: 6px;
+      width: 230px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       z-index: 40;
       opacity: 0;
-      transform: translateY(10px) scale(0.95);
+      transform: translateY(8px) scale(0.96);
       pointer-events: none;
-      transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
     .alu-model-menu-bottom.show {
@@ -835,37 +801,12 @@
       pointer-events: auto;
     }
 
-    /* ============================================================
-       ANIMATIONS
-       ============================================================ */
-    @keyframes alu-fade-up {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes alu-welcome-in {
-      from { opacity: 0; transform: translateY(20px) scale(0.98); filter: blur(8px); }
-      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-    }
-
     @keyframes alu-msg-in {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes alu-pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.7; }
-    }
-
-    @keyframes alu-blink {
-      0%, 49% { opacity: 1; }
-      50%, 100% { opacity: 0; }
-    }
-
-    /* ============================================================
-       RESPONSIVE MOBILE COMPLET (IDENTIQUE AU DESKTOP)
-       ============================================================ */
+    /* ========== RESPONSIVE ========== */
     @media screen and (max-width: 900px) {
       .alu-app {
         grid-template-columns: 1fr;
@@ -880,8 +821,6 @@
         height: 100dvh !important;
         z-index: 50 !important;
         transition: left 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
-        background-color: #1e1f20 !important;
-        display: flex !important;
         padding-top: var(--safe-top);
       }
 
@@ -890,19 +829,13 @@
       }
 
       .alu-topbar {
-        padding: 8px 12px !important;
+        padding: 0 12px !important;
         height: 56px !important;
-        gap: 6px !important;
       }
 
       .alu-upgrade-btn {
-        padding: 7px 12px !important;
-        font-size: 0.75rem !important;
-        white-space: nowrap !important;
-      }
-
-      .alu-upgrade-btn span:last-child {
-        display: none;
+        padding: 10px 16px !important;
+        font-size: 0.88rem !important;
       }
 
       .alu-composer-wrap {
@@ -911,68 +844,43 @@
       }
 
       .alu-composer {
-        padding: 8px !important;
-        border-radius: 22px !important;
+        border-radius: 20px !important;
       }
 
       .alu-welcome-title {
-        font-size: 1.7rem !important;
-        line-height: 1.35 !important;
+        font-size: 1.55rem !important;
         padding: 0 16px !important;
       }
 
-      .alu-history-actions {
-        opacity: 1 !important;
-      }
-
       .alu-msg-user .alu-msg-body {
-        max-width: 88%;
+        max-width: min(88%, 300px);
       }
 
       .alu-conversation {
-        padding-top: 70px !important;
-        padding-bottom: 150px !important;
+        padding-top: 68px !important;
+        padding-bottom: 145px !important;
       }
     }
 
     @media screen and (max-width: 480px) {
-      .alu-welcome-title {
-        font-size: 1.5rem !important;
+      .alu-upgrade-btn {
+        padding: 9px 14px !important;
+        font-size: 0.84rem !important;
       }
 
-      .alu-composer {
-        border-radius: 20px !important;
+      .alu-msg-user .alu-msg-body {
+        max-width: min(90%, 280px);
       }
-
-      .alu-tool-btn,
-      .alu-send-btn {
-        width: 38px;
-        height: 38px;
-      }
-
-      .alu-model-pill {
-        padding: 7px 10px;
-        font-size: 0.8rem;
-      }
-
-      .alu-msg-content {
-        font-size: 0.93rem;
-      }
-    }
-
-    /* Backdrop mobile */
-    #sidebar-backdrop {
-      transition: opacity 0.25s ease;
     }
   </style>
 </head>
 
 <body class="bg-[#131314] text-[#e3e3e3]">
-  <!-- ÉCRAN D'AUTHENTIFICATION -->
+  <!-- AUTH -->
   <div id="auth-screen" class="fixed inset-0 bg-[#131314] z-50 flex items-center justify-center p-4">
     <div class="bg-[#1e1f20] border border-[#303133] p-8 rounded-2xl w-full max-w-md shadow-2xl">
       <div class="flex items-center gap-2 mb-6 justify-center">
-        <span class="text-3xl" style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;">✦</span>
+        <span class="text-2xl font-semibold text-[#8ab4f8]">✦</span>
         <h2 class="text-2xl font-medium tracking-tight" id="auth-title">Connexion à Aluetoo</h2>
       </div>
       <form id="auth-form" class="space-y-4">
@@ -999,13 +907,12 @@
     </div>
   </div>
 
-  <!-- APPLICATION PRINCIPALE -->
+  <!-- APP -->
   <div class="alu-app hidden" id="app-container">
-    <!-- SIDEBAR -->
     <aside class="alu-sidebar" id="alu-sidebar">
       <div class="alu-sidebar-top">
         <div class="alu-brand">
-          <div class="alu-brand-icon">✦</div>
+          <div class="alu-brand-icon">A</div>
           <span class="alu-brand-name">Aluetoo</span>
         </div>
       </div>
@@ -1062,7 +969,6 @@
 
     <div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebar-backdrop"></div>
 
-    <!-- ZONE PRINCIPALE -->
     <main class="alu-main">
       <div class="alu-topbar">
         <div class="alu-topbar-left">
@@ -1138,10 +1044,10 @@
     </main>
   </div>
 
-  <!-- MODAL BONUS -->
+  <!-- BONUS MODAL -->
   <div id="bonus-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#1e1f20] border border-[#303133] p-6 rounded-2xl w-full max-w-sm shadow-2xl text-center">
-      <h3 class="text-lg font-medium mb-2 text-white">🎁 Message Bonus Quotidien</h3>
+      <h3 class="text-lg font-medium mb-2 text-white">Message Bonus Quotidien</h3>
       <p class="text-xs text-[#9aa0a6] mb-4">Voici le code secret d'aujourd'hui. Entrez-le ci-dessous pour obtenir +1 message bonus sur Aluetoo Fast Lite !</p>
       
       <div class="bg-[#131314] border border-[#303133] rounded-xl py-3 px-4 mb-4 font-mono text-xl text-[#8ab4f8] tracking-widest font-bold select-all" id="daily-code-display">
@@ -1158,30 +1064,12 @@
   </div>
 
   <script>
-    /* ============================================================
-       CONFIGURATION & ÉTAT GLOBAL
-       ============================================================ */
     const GROQ_API_KEY = "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";
 
     const modelsConfig = {
-      "fast-lite": {
-        name: "Aluetoo Fast Lite",
-        apiName: "openai/gpt-oss-20b",
-        limit: 20,
-        pill: "Fast Lite"
-      },
-      "super-fast": {
-        name: "Aluetoo Super Fast",
-        apiName: "qwen/qwen3.8-27b",
-        limit: 10,
-        pill: "Super Fast"
-      },
-      "pro": {
-        name: "Aluetoo Pro",
-        apiName: "openai/gpt-oss-120b",
-        limit: 5,
-        pill: "Aluetoo Pro"
-      }
+      "fast-lite": { name: "Aluetoo Fast Lite", apiName: "openai/gpt-oss-20b", limit: 20, pill: "Fast Lite" },
+      "super-fast": { name: "Aluetoo Super Fast", apiName: "qwen/qwen3.8-27b", limit: 10, pill: "Super Fast" },
+      "pro": { name: "Aluetoo Pro", apiName: "openai/gpt-oss-120b", limit: 5, pill: "Aluetoo Pro" }
     };
 
     let selectedModelKey = "fast-lite";
@@ -1190,30 +1078,16 @@
     let currentAttachedFile = null;
     let currentActiveChatId = null;
 
-    /* ============================================================
-       GESTION DES LIMITES D'UTILISATION
-       ============================================================ */
     function getUsage() {
       const now = Date.now();
       const SIX_HOURS = 6 * 60 * 60 * 1000;
       let data = localStorage.getItem(`alu_usage_${currentUser.email}`);
-
       if (!data) {
-        data = {
-          timestamp: now,
-          "fast-lite": 0,
-          "super-fast": 0,
-          "pro": 0
-        };
+        data = { timestamp: now, "fast-lite": 0, "super-fast": 0, "pro": 0 };
       } else {
         data = JSON.parse(data);
         if (!data.timestamp || (now - data.timestamp) > SIX_HOURS) {
-          data = {
-            timestamp: now,
-            "fast-lite": 0,
-            "super-fast": 0,
-            "pro": 0
-          };
+          data = { timestamp: now, "fast-lite": 0, "super-fast": 0, "pro": 0 };
         }
       }
       return data;
@@ -1226,19 +1100,15 @@
 
     function updateLimitCountersDisplay() {
       const usage = getUsage();
-      document.getElementById("count-fast-lite").innerText =
-        `(${modelsConfig["fast-lite"].limit - usage["fast-lite"]}/${modelsConfig["fast-lite"].limit})`;
-      document.getElementById("count-super-fast").innerText =
-        `(${modelsConfig["super-fast"].limit - usage["super-fast"]}/${modelsConfig["super-fast"].limit})`;
-      document.getElementById("count-pro").innerText =
-        `(${modelsConfig["pro"].limit - usage["pro"]}/${modelsConfig["pro"].limit})`;
+      document.getElementById("count-fast-lite").innerText = `(${modelsConfig["fast-lite"].limit - usage["fast-lite"]}/${modelsConfig["fast-lite"].limit})`;
+      document.getElementById("count-super-fast").innerText = `(${modelsConfig["super-fast"].limit - usage["super-fast"]}/${modelsConfig["super-fast"].limit})`;
+      document.getElementById("count-pro").innerText = `(${modelsConfig["pro"].limit - usage["pro"]}/${modelsConfig["pro"].limit})`;
     }
 
     function checkGlobalLimits() {
       const usage = getUsage();
       const input = document.getElementById("chat-input");
       const composer = document.getElementById("composer-box");
-
       if (usage[selectedModelKey] >= modelsConfig[selectedModelKey].limit) {
         if (selectedModelKey !== "fast-lite" && usage["fast-lite"] < modelsConfig["fast-lite"].limit) {
           switchModel("fast-lite");
@@ -1261,9 +1131,6 @@
       checkGlobalLimits();
     }
 
-    /* ============================================================
-       AUTHENTIFICATION
-       ============================================================ */
     function setupAuth() {
       const authForm = document.getElementById("auth-form");
       const authTitle = document.getElementById("auth-title");
@@ -1276,7 +1143,6 @@
       authToggleBtn.addEventListener("click", (e) => {
         e.preventDefault();
         isSignUpMode = !isSignUpMode;
-
         if (isSignUpMode) {
           authTitle.innerText = "Créer un compte Aluetoo";
           authSubmitBtn.innerText = "S'inscrire";
@@ -1312,11 +1178,7 @@
               return;
             }
           } else {
-            currentUser = {
-              firstname: email.split('@')[0],
-              email,
-              password
-            };
+            currentUser = { firstname: email.split('@')[0], email, password };
             localStorage.setItem(`user_${email}`, JSON.stringify(currentUser));
           }
         }
@@ -1335,40 +1197,27 @@
     function startApp() {
       document.getElementById("auth-screen").classList.add("hidden");
       document.getElementById("app-container").classList.remove("hidden");
-
       document.getElementById("user-display-name").innerText = currentUser.firstname;
       document.getElementById("user-avatar").innerText = currentUser.firstname.substring(0, 2).toUpperCase();
-      document.getElementById("welcome-text").innerText =
-        `Avez-vous de nouvelles idées ${currentUser.firstname.toUpperCase()} ?`;
-
+      document.getElementById("welcome-text").innerText = `Avez-vous de nouvelles idées ${currentUser.firstname.toUpperCase()} ?`;
       loadSavedConversations();
       updateLimitCountersDisplay();
       checkGlobalLimits();
     }
 
-    /* ============================================================
-       CODE BONUS QUOTIDIEN
-       ============================================================ */
     function getDailyCodeDetails() {
       const d = new Date();
       const day = String(d.getDate()).padStart(2, '0');
       const month = String(d.getMonth() + 1).padStart(2, '0');
-      return {
-        dateStr: `${d.getFullYear()}-${month}-${day}`,
-        code: `ALU-${day}${month}`
-      };
+      return { dateStr: `${d.getFullYear()}-${month}-${day}`, code: `ALU-${day}${month}` };
     }
 
-    /* ============================================================
-       INTERFACE UTILISATEUR
-       ============================================================ */
     function setupUI() {
       const modelToggleBtn = document.getElementById("input-model-indicator-btn");
       const modelDropdownBottom = document.getElementById("model-dropdown-bottom");
       const input = document.getElementById("chat-input");
       const sendBtn = document.getElementById("send-btn");
 
-      // Menu modèles
       modelToggleBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         modelDropdownBottom.classList.toggle("show");
@@ -1381,7 +1230,6 @@
         });
       });
 
-      // Sidebar mobile
       const sidebar = document.getElementById("alu-sidebar");
       const sidebarToggle = document.getElementById("mobile-sidebar-toggle");
       const backdrop = document.getElementById("sidebar-backdrop");
@@ -1399,16 +1247,10 @@
         backdrop.classList.add("hidden");
       });
 
-      // Zone de saisie
       input.addEventListener("input", () => {
         input.style.height = "auto";
-        input.style.height = Math.min(input.scrollHeight, 160) + "px";
-
-        if (input.value.trim().length > 0 && !input.disabled) {
-          sendBtn.disabled = false;
-        } else {
-          sendBtn.disabled = true;
-        }
+        input.style.height = Math.min(input.scrollHeight, 150) + "px";
+        sendBtn.disabled = !(input.value.trim().length > 0 && !input.disabled);
       });
 
       input.addEventListener("keydown", (e) => {
@@ -1420,7 +1262,6 @@
 
       sendBtn.addEventListener("click", handleSendMessage);
 
-      // Nouvelle conversation
       document.getElementById("new-chat-btn").addEventListener("click", () => {
         document.getElementById("chat-messages").innerHTML = "";
         conversationHistory = [];
@@ -1431,28 +1272,22 @@
         backdrop.classList.add("hidden");
       });
 
-      // Déconnexion
       document.getElementById("logout-btn").addEventListener("click", () => {
         localStorage.removeItem("alu_session");
         window.location.reload();
       });
 
-      // Fermeture menu modèles
       window.addEventListener("click", (e) => {
         if (!modelToggleBtn.contains(e.target)) {
           modelDropdownBottom.classList.remove("show");
         }
       });
 
-      // Localisation
       document.getElementById("update-location-btn").addEventListener("click", () => {
         const newLoc = prompt("Entrez votre pays ou localisation :");
-        if (newLoc) {
-          document.getElementById("current-location").innerText = newLoc;
-        }
+        if (newLoc) document.getElementById("current-location").innerText = newLoc;
       });
 
-      // Pièces jointes
       const realFileInput = document.getElementById("real-file-input");
       const filePreview = document.getElementById("attached-file-preview");
       const fileNameSpan = document.getElementById("attached-file-name");
@@ -1481,7 +1316,6 @@
         realFileInput.value = "";
       });
 
-      // Recherche historique
       document.getElementById("search-history").addEventListener("input", (e) => {
         const query = e.target.value.toLowerCase();
         document.querySelectorAll(".alu-history-item-container").forEach(item => {
@@ -1489,7 +1323,6 @@
         });
       });
 
-      // Modal bonus
       const upgradeBtn = document.getElementById("upgrade-btn");
       const bonusModal = document.getElementById("bonus-modal");
       const closeBonusModal = document.getElementById("close-bonus-modal");
@@ -1502,9 +1335,7 @@
         bonusModal.classList.remove("hidden");
       });
 
-      closeBonusModal.addEventListener("click", () => {
-        bonusModal.classList.add("hidden");
-      });
+      closeBonusModal.addEventListener("click", () => bonusModal.classList.add("hidden"));
 
       submitBonusBtn.addEventListener("click", () => {
         const { dateStr, code } = getDailyCodeDetails();
@@ -1512,13 +1343,11 @@
           alert("Code incorrect.");
           return;
         }
-
         const keyClaimed = `alu_bonus_claimed_${currentUser.email}_${dateStr}`;
         if (localStorage.getItem(keyClaimed)) {
           alert("Déjà récupéré aujourd'hui !");
           return;
         }
-
         const usage = getUsage();
         usage["fast-lite"] = Math.max(0, usage["fast-lite"] - 1);
         saveUsage(usage);
@@ -1529,9 +1358,6 @@
       });
     }
 
-    /* ============================================================
-       ENVOI DE MESSAGE + STREAMING
-       ============================================================ */
     async function handleSendMessage() {
       const input = document.getElementById("chat-input");
       let text = input.value.trim();
@@ -1548,8 +1374,7 @@
 
       let isImageAttached = false;
       if (currentAttachedFile) {
-        if (currentAttachedFile.type.startsWith("image/") ||
-            /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(currentAttachedFile.name)) {
+        if (currentAttachedFile.type.startsWith("image/") || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(currentAttachedFile.name)) {
           isImageAttached = true;
         }
         text = `[Document Joint: ${currentAttachedFile.name}] \n` + text;
@@ -1585,7 +1410,7 @@
           body: JSON.stringify({
             model: selectedModelName,
             messages: [
-              { role: "system", content: "TU EST ALUETOO ET TU SORT JAMAIS DE TON ROLE" },
+              { role: "system", content: "Tu es Aluetoo, une intelligence artificielle utile et naturelle. Réponds de façon claire et directe, sans utiliser d'étoiles ni de symboles décoratifs inutiles." },
               ...conversationHistory
             ],
             temperature: 0.7,
@@ -1599,10 +1424,8 @@
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-
           const chunk = decoder.decode(value, { stream: true });
           const lines = chunk.split("\n");
-
           for (const line of lines) {
             if (line.startsWith("data: ")) {
               if (line.includes("[DONE]")) break;
@@ -1628,25 +1451,8 @@
       checkGlobalLimits();
     }
 
-    /* ============================================================
-       FORMATAGE DES RÉPONSES
-       ============================================================ */
     function formatAIResponse(text) {
-      let html = marked.parse(text);
-
-      if (text.toLowerCase().includes("youtube") && !html.includes("alu-source-badge")) {
-        html += ` <a href="https://www.youtube.com" target="_blank" class="alu-source-badge">
-          <img src="https://www.youtube.com/s/desktop/282a325b/img/favicon_32x32.png" class="alu-source-icon">
-          YouTube · Tech and Shoot +5
-        </a>`;
-      } else if (text.toLowerCase().includes("samsung") && !html.includes("alu-source-badge")) {
-        html += ` <a href="https://fr.wikipedia.org" target="_blank" class="alu-source-badge">
-          <img src="https://en.wikipedia.org/static/favicon/wikipedia.ico" class="alu-source-icon">
-          Wikipédia
-        </a>`;
-      }
-
-      return html;
+      return marked.parse(text);
     }
 
     function appendMessageUI(sender, text) {
@@ -1656,14 +1462,14 @@
 
       if (sender === "assistant") {
         wrapper.innerHTML = `
-          <div class="alu-msg-avatar" style="background: var(--gradient); border:none; color:white; font-size:12px; font-weight:bold;">✦</div>
+          <div class="alu-msg-avatar">A</div>
           <div class="alu-msg-body">
             <div class="alu-msg-content">${text}</div>
           </div>`;
       } else {
         wrapper.innerHTML = `
           <div class="alu-msg-body">
-            <div class="alu-msg-content"><p>${text.replace(/\n/g, '<br>')}</p></div>
+            <div class="alu-msg-content">${text.replace(/\n/g, '<br>')}</div>
           </div>`;
       }
 
@@ -1671,9 +1477,6 @@
       return wrapper;
     }
 
-    /* ============================================================
-       GESTION DE L'HISTORIQUE
-       ============================================================ */
     function saveConversationToGlobal(userPrompt, aiReply) {
       const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
       let list = saved ? JSON.parse(saved) : [];
@@ -1690,7 +1493,6 @@
 
       const newId = "chat_" + Date.now();
       currentActiveChatId = newId;
-
       list.push({
         id: newId,
         prompt: userPrompt,
@@ -1708,7 +1510,6 @@
       e.stopPropagation();
       const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
       if (!saved) return;
-
       let list = JSON.parse(saved);
       const index = list.findIndex(c => c.id === id);
       if (index !== -1) {
@@ -1721,28 +1522,23 @@
     function deleteChat(id, e) {
       e.stopPropagation();
       if (!confirm("Voulez-vous supprimer cette discussion ?")) return;
-
       const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
       if (!saved) return;
-
       let list = JSON.parse(saved);
       list = list.filter(c => c.id !== id);
       localStorage.setItem(`alu_history_${currentUser.email}`, JSON.stringify(list));
-
       if (currentActiveChatId === id) {
         document.getElementById("chat-messages").innerHTML = "";
         conversationHistory = [];
         currentActiveChatId = null;
         document.getElementById("welcome-screen").classList.remove("hidden");
       }
-
       loadSavedConversations();
     }
 
     function loadSavedConversations() {
       const listContainer = document.getElementById("history-list");
       const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
-
       listContainer.innerHTML = "";
 
       if (!saved || JSON.parse(saved).length === 0) {
@@ -1758,38 +1554,27 @@
       });
 
       items.forEach((item) => {
-        const title = item.prompt.length > 22
-          ? item.prompt.substring(0, 22) + "..."
-          : item.prompt;
-
+        const title = item.prompt.length > 22 ? item.prompt.substring(0, 22) + "..." : item.prompt;
         const container = document.createElement("div");
         container.className = `alu-history-item-container ${item.pinned ? 'pinned' : ''}`;
 
         const textBtn = document.createElement("button");
         textBtn.className = "alu-history-btn-text";
-        textBtn.innerHTML = `💬 ${title}`;
-
+        textBtn.innerHTML = title;
         textBtn.addEventListener("click", () => {
           document.getElementById("welcome-screen").classList.add("hidden");
           const chatMessages = document.getElementById("chat-messages");
           chatMessages.innerHTML = "";
-
           currentActiveChatId = item.id;
           conversationHistory = item.history || [
             { role: "user", content: item.prompt },
             { role: "assistant", content: item.reply }
           ];
-
           conversationHistory.forEach(msg => {
-            appendMessageUI(
-              msg.role,
-              msg.role === 'assistant' ? formatAIResponse(msg.content) : msg.content
-            );
+            appendMessageUI(msg.role, msg.role === 'assistant' ? formatAIResponse(msg.content) : msg.content);
           });
-
           const containerWrap = document.getElementById("conversation-container");
           containerWrap.scrollTop = containerWrap.scrollHeight;
-
           document.getElementById("alu-sidebar").classList.remove("active");
           document.getElementById("sidebar-backdrop").classList.add("hidden");
         });
@@ -1809,16 +1594,12 @@
 
         actionsDiv.appendChild(pinIcon);
         actionsDiv.appendChild(deleteIcon);
-
         container.appendChild(textBtn);
         container.appendChild(actionsDiv);
         listContainer.appendChild(container);
       });
     }
 
-    /* ============================================================
-       INITIALISATION
-       ============================================================ */
     document.addEventListener("DOMContentLoaded", () => {
       setupAuth();
       setupUI();

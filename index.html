@@ -99,7 +99,7 @@
       position: relative;
     }
 
-    /* ========== SIDEBAR AVEC GLASSMORPHISM ========== */
+    /* ========== SIDEBAR ========== */
     .alu-sidebar {
       display: flex;
       flex-direction: column;
@@ -382,70 +382,95 @@
       color: var(--accent);
     }
 
-    /* ========== MENU PARAMÈTRES ========== */
-    .alu-settings-menu {
-      position: absolute;
-      bottom: 48px;
-      right: 0;
-      background: #1e1f20;
-      border: 1px solid #303133;
-      border-radius: 16px;
-      padding: 14px;
-      width: 220px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.55);
-      z-index: 60;
-      animation: alu-fade-up 180ms ease;
+    /* ========== ÉCRAN PARAMÈTRES PLEIN ÉCRAN ========== */
+    #settings-screen {
+      position: fixed;
+      inset: 0;
+      background: #131314;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
     }
 
-    .alu-settings-menu.hidden {
-      display: none;
+    #settings-screen.open {
+      transform: translateX(0);
     }
 
-    .alu-settings-title {
-      margin: 0 0 12px 0;
-      font-size: 0.95rem;
-      font-weight: 500;
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .settings-back-btn {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
       color: var(--text);
+      transition: background 140ms ease;
     }
 
-    .alu-settings-section {
-      margin-bottom: 4px;
+    .settings-back-btn:hover {
+      background: rgba(255,255,255,0.08);
     }
 
-    .alu-settings-label {
-      margin: 0 0 8px 0;
-      font-size: 0.78rem;
+    .settings-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .settings-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px;
+    }
+
+    .settings-section {
+      margin-bottom: 32px;
+    }
+
+    .settings-section-title {
+      font-size: 0.85rem;
       color: var(--muted);
       font-weight: 500;
+      margin: 0 0 16px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .alu-accent-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      gap: 14px;
+      max-width: 280px;
     }
 
     .alu-color-swatch {
-      width: 32px;
-      height: 32px;
+      width: 48px;
+      height: 48px;
       border-radius: 999px;
-      border: 2px solid transparent;
+      border: 3px solid transparent;
       transition: transform 150ms ease, border-color 150ms ease;
       cursor: pointer;
     }
 
     .alu-color-swatch:hover {
-      transform: scale(1.12);
+      transform: scale(1.08);
     }
 
     .alu-color-swatch.active {
       border-color: white;
-      box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
-    }
-
-    @keyframes alu-fade-up {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
     }
 
     /* ========== MAIN ========== */
@@ -536,7 +561,6 @@
       gap: 22px;
     }
 
-    /* ========== MESSAGES ========== */
     .alu-msg {
       display: flex;
       gap: 12px;
@@ -698,32 +722,6 @@
       font-weight: 600;
     }
 
-    .alu-source-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background-color: #2a2b2d;
-      border: 1px solid #303133;
-      border-radius: 12px;
-      padding: 2px 8px;
-      font-size: 11px;
-      color: #bdc1c6;
-      margin-left: 6px;
-      vertical-align: middle;
-      text-decoration: none;
-    }
-
-    .alu-source-badge:hover {
-      background-color: #333537;
-    }
-
-    .alu-source-icon {
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
-    }
-
-    /* ========== COMPOSER ========== */
     .alu-composer-wrap {
       position: absolute !important;
       bottom: 0 !important;
@@ -1017,32 +1015,9 @@
           </div>
 
           <!-- Bouton Paramètres (roue dentée) -->
-          <div class="relative">
-            <button class="alu-settings-btn" id="settings-btn" title="Paramètres">
-              <span class="material-symbols-outlined">settings</span>
-            </button>
-
-            <!-- Menu Paramètres -->
-            <div id="settings-menu" class="alu-settings-menu hidden">
-              <p class="alu-settings-title">Paramètres</p>
-
-              <!-- Section Couleur d'accentuation -->
-              <div class="alu-settings-section">
-                <p class="alu-settings-label">Couleur d'accentuation</p>
-                <div class="alu-accent-grid">
-                  <button class="alu-color-swatch" data-color="red" style="background:#ef4444" title="Rouge"></button>
-                  <button class="alu-color-swatch" data-color="green" style="background:#22c55e" title="Vert"></button>
-                  <button class="alu-color-swatch" data-color="blue" style="background:#3b82f6" title="Bleu"></button>
-                  <button class="alu-color-swatch" data-color="mauve" style="background:#a78bfa" title="Mauve"></button>
-                  <button class="alu-color-swatch" data-color="pink" style="background:#ec4899" title="Rose"></button>
-                  <button class="alu-color-swatch" data-color="turquoise" style="background:#14b8a6" title="Turquoise"></button>
-                  <button class="alu-color-swatch" data-color="orange" style="background:#f97316" title="Orange"></button>
-                </div>
-              </div>
-
-              <!-- Vous pourrez ajouter d'autres sections ici plus tard -->
-            </div>
-          </div>
+          <button class="alu-settings-btn" id="settings-btn" title="Paramètres">
+            <span class="material-symbols-outlined">settings</span>
+          </button>
 
           <button class="alu-settings-btn" id="logout-btn" title="Se déconnecter">
             <span class="material-symbols-outlined">logout</span>
@@ -1134,6 +1109,34 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- ========== ÉCRAN PARAMÈTRES PLEIN ÉCRAN ========== -->
+  <div id="settings-screen">
+    <div class="settings-header">
+      <button class="settings-back-btn" id="settings-back-btn">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <h2 class="settings-title">Paramètres</h2>
+    </div>
+
+    <div class="settings-content">
+      <!-- Section Couleur d'accentuation -->
+      <div class="settings-section">
+        <p class="settings-section-title">Couleur d'accentuation</p>
+        <div class="alu-accent-grid">
+          <button class="alu-color-swatch" data-color="red" style="background:#ef4444" title="Rouge"></button>
+          <button class="alu-color-swatch" data-color="green" style="background:#22c55e" title="Vert"></button>
+          <button class="alu-color-swatch" data-color="blue" style="background:#3b82f6" title="Bleu"></button>
+          <button class="alu-color-swatch" data-color="mauve" style="background:#a78bfa" title="Mauve"></button>
+          <button class="alu-color-swatch" data-color="pink" style="background:#ec4899" title="Rose"></button>
+          <button class="alu-color-swatch" data-color="turquoise" style="background:#14b8a6" title="Turquoise"></button>
+          <button class="alu-color-swatch" data-color="orange" style="background:#f97316" title="Orange"></button>
+        </div>
+      </div>
+
+      <!-- Vous pourrez ajouter d'autres sections ici plus tard -->
+    </div>
   </div>
 
   <!-- BONUS MODAL -->
@@ -1450,7 +1453,7 @@
       });
 
       /* ============================================================
-         PARAMÈTRES + COULEURS D'ACCENTUATION
+         PARAMÈTRES PLEIN ÉCRAN + COULEURS D'ACCENTUATION
          ============================================================ */
       const accentThemes = {
         red:       { accent: "#f87171", strong: "#ef4444", soft: "rgba(239, 68, 68, 0.14)" },
@@ -1476,24 +1479,24 @@
       }
 
       const settingsBtn = document.getElementById("settings-btn");
-      const settingsMenu = document.getElementById("settings-menu");
+      const settingsScreen = document.getElementById("settings-screen");
+      const settingsBackBtn = document.getElementById("settings-back-btn");
 
-      settingsBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        settingsMenu.classList.toggle("hidden");
+      settingsBtn.addEventListener("click", () => {
+        settingsScreen.classList.add("open");
+        // Ferme la sidebar si elle est ouverte
+        sidebar.classList.remove("active");
+        backdrop.classList.add("hidden");
+      });
+
+      settingsBackBtn.addEventListener("click", () => {
+        settingsScreen.classList.remove("open");
       });
 
       document.querySelectorAll(".alu-color-swatch").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
+        btn.addEventListener("click", () => {
           applyAccentColor(btn.dataset.color);
         });
-      });
-
-      window.addEventListener("click", (e) => {
-        if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) {
-          settingsMenu.classList.add("hidden");
-        }
       });
 
       // Restaurer la couleur sauvegardée

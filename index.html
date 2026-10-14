@@ -135,7 +135,7 @@
       place-items: center;
       font-size: 1.4rem;
       font-weight: 600;
-      color: #8ab4f8;
+      color: var(--accent);
     }
 
     .alu-brand-name {
@@ -278,7 +278,7 @@
     }
 
     .alu-action-icon.pinned-active {
-      color: #8ab4f8;
+      color: var(--accent);
     }
 
     .alu-activity {
@@ -382,6 +382,72 @@
       color: var(--accent);
     }
 
+    /* ========== MENU PARAMÈTRES ========== */
+    .alu-settings-menu {
+      position: absolute;
+      bottom: 48px;
+      right: 0;
+      background: #1e1f20;
+      border: 1px solid #303133;
+      border-radius: 16px;
+      padding: 14px;
+      width: 220px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+      z-index: 60;
+      animation: alu-fade-up 180ms ease;
+    }
+
+    .alu-settings-menu.hidden {
+      display: none;
+    }
+
+    .alu-settings-title {
+      margin: 0 0 12px 0;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .alu-settings-section {
+      margin-bottom: 4px;
+    }
+
+    .alu-settings-label {
+      margin: 0 0 8px 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .alu-accent-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .alu-color-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      transition: transform 150ms ease, border-color 150ms ease;
+      cursor: pointer;
+    }
+
+    .alu-color-swatch:hover {
+      transform: scale(1.12);
+    }
+
+    .alu-color-swatch.active {
+      border-color: white;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+    }
+
+    @keyframes alu-fade-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* ========== MAIN ========== */
     .alu-main {
       position: relative !important;
@@ -414,7 +480,6 @@
       gap: 8px;
     }
 
-    /* Bouton upgrade agrandi */
     .alu-upgrade-btn {
       display: flex;
       align-items: center;
@@ -486,7 +551,6 @@
       justify-content: flex-start;
     }
 
-    /* Avatar IA sobre (plus de gradient ni d’étoile) */
     .alu-msg-avatar {
       flex-shrink: 0;
       width: 32px;
@@ -506,7 +570,6 @@
       max-width: 100%;
     }
 
-    /* Correction du stretch des messages utilisateur */
     .alu-msg-user .alu-msg-body {
       background: var(--user-bubble);
       padding: 10px 16px;
@@ -952,6 +1015,35 @@
           <div class="alu-user-info">
             <p class="alu-user-name" id="user-display-name">LEO</p>
           </div>
+
+          <!-- Bouton Paramètres (roue dentée) -->
+          <div class="relative">
+            <button class="alu-settings-btn" id="settings-btn" title="Paramètres">
+              <span class="material-symbols-outlined">settings</span>
+            </button>
+
+            <!-- Menu Paramètres -->
+            <div id="settings-menu" class="alu-settings-menu hidden">
+              <p class="alu-settings-title">Paramètres</p>
+
+              <!-- Section Couleur d'accentuation -->
+              <div class="alu-settings-section">
+                <p class="alu-settings-label">Couleur d'accentuation</p>
+                <div class="alu-accent-grid">
+                  <button class="alu-color-swatch" data-color="red" style="background:#ef4444" title="Rouge"></button>
+                  <button class="alu-color-swatch" data-color="green" style="background:#22c55e" title="Vert"></button>
+                  <button class="alu-color-swatch" data-color="blue" style="background:#3b82f6" title="Bleu"></button>
+                  <button class="alu-color-swatch" data-color="mauve" style="background:#a78bfa" title="Mauve"></button>
+                  <button class="alu-color-swatch" data-color="pink" style="background:#ec4899" title="Rose"></button>
+                  <button class="alu-color-swatch" data-color="turquoise" style="background:#14b8a6" title="Turquoise"></button>
+                  <button class="alu-color-swatch" data-color="orange" style="background:#f97316" title="Orange"></button>
+                </div>
+              </div>
+
+              <!-- Vous pourrez ajouter d'autres sections ici plus tard -->
+            </div>
+          </div>
+
           <button class="alu-settings-btn" id="logout-btn" title="Se déconnecter">
             <span class="material-symbols-outlined">logout</span>
           </button>
@@ -1356,6 +1448,57 @@
         bonusModal.classList.add("hidden");
         checkGlobalLimits();
       });
+
+      /* ============================================================
+         PARAMÈTRES + COULEURS D'ACCENTUATION
+         ============================================================ */
+      const accentThemes = {
+        red:       { accent: "#f87171", strong: "#ef4444", soft: "rgba(239, 68, 68, 0.14)" },
+        green:     { accent: "#4ade80", strong: "#22c55e", soft: "rgba(34, 197, 94, 0.14)" },
+        blue:      { accent: "#8ab4f8", strong: "#4285f4", soft: "rgba(138, 180, 248, 0.12)" },
+        mauve:     { accent: "#c4b5fd", strong: "#a78bfa", soft: "rgba(167, 139, 250, 0.14)" },
+        pink:      { accent: "#f472b6", strong: "#ec4899", soft: "rgba(236, 72, 153, 0.14)" },
+        turquoise: { accent: "#2dd4bf", strong: "#14b8a6", soft: "rgba(20, 184, 166, 0.14)" },
+        orange:    { accent: "#fb923c", strong: "#f97316", soft: "rgba(249, 115, 22, 0.14)" }
+      };
+
+      function applyAccentColor(colorKey) {
+        const theme = accentThemes[colorKey] || accentThemes.blue;
+        document.documentElement.style.setProperty("--accent", theme.accent);
+        document.documentElement.style.setProperty("--accent-strong", theme.strong);
+        document.documentElement.style.setProperty("--accent-soft", theme.soft);
+
+        document.querySelectorAll(".alu-color-swatch").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.color === colorKey);
+        });
+
+        localStorage.setItem("alu_accent_color", colorKey);
+      }
+
+      const settingsBtn = document.getElementById("settings-btn");
+      const settingsMenu = document.getElementById("settings-menu");
+
+      settingsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        settingsMenu.classList.toggle("hidden");
+      });
+
+      document.querySelectorAll(".alu-color-swatch").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          applyAccentColor(btn.dataset.color);
+        });
+      });
+
+      window.addEventListener("click", (e) => {
+        if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) {
+          settingsMenu.classList.add("hidden");
+        }
+      });
+
+      // Restaurer la couleur sauvegardée
+      const savedAccent = localStorage.getItem("alu_accent_color") || "blue";
+      applyAccentColor(savedAccent);
     }
 
     async function handleSendMessage() {

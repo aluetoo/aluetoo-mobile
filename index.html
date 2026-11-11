@@ -1818,8 +1818,7 @@
       }
 
       applyLanguage(currentLang);
-      loadSavedConversations();
-      setupConversationsRealtime();
+      loadSavedConversations().then(() => setupConversationsRealtime());
       loadBanStatus().then(() => loadUpcomingEvents()).then(() => loadCommunityAnnouncements()).then(() => loadBonusNotifications());
       updateLimitCountersDisplay();
       checkGlobalLimits();

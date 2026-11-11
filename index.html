@@ -2177,7 +2177,7 @@
       const contentDiv = aiBubble.querySelector(".alu-msg-content");
       const statusDiv = document.createElement("div");
       statusDiv.className = "alu-ai-status";
-      statusDiv.textContent = "Recherche sur le Web…";
+      statusDiv.textContent = "Analyse de la demande…";
       contentDiv.parentElement.insertBefore(statusDiv, contentDiv);
       const container = document.getElementById("conversation-container");
       container.scrollTop = container.scrollHeight;
@@ -2271,7 +2271,7 @@
             try {
               const json = JSON.parse(data);
               if (json.status === "searching") statusDiv.textContent = "Recherche sur le Web…";
-              if (json.status === "writing") statusDiv.textContent = json.webSearchUsed ? "Rédaction de la réponse…" : "Réflexion en cours…";
+              if (json.status === "analyzing") statusDiv.textContent = json.message || (json.webSearchUsed ? "Analyse des sources trouvées…" : "Réflexion en cours…");
               if (json.status === "waiting") statusDiv.textContent = json.message || "Nouvelle tentative en cours…";
               if (json.error) streamError = String(json.error);
               if (json.webSearchUsed === true) webSearchUsed = true;

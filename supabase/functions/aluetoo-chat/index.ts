@@ -4,6 +4,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Expose-Headers": "X-Aluetoo-Quota-Model, X-Aluetoo-Quota-Used, X-Aluetoo-Quota-Limit, X-Aluetoo-Bonus-Remaining, X-Aluetoo-Quota-Reset",
 };
 const MODEL_LIMITS: Record<string, number> = {
   "fast-lite": 20, "super-fast": 10, "pro": 5,

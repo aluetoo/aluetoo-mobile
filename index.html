@@ -1201,6 +1201,7 @@
     let conversationHistory = [];
     let currentAttachedFile = null;
     let currentActiveChatId = null;
+    let currentActiveChatPinned = false;
     let currentLang = localStorage.getItem("alu_lang") || "fr";
     let accountSecurityFlow = null;
     let accountVerifiedForAction = false;
@@ -1688,23 +1689,36 @@
       const section = document.getElementById("upcoming-events");
       if (!section) return;
       try {
-        const now = new Date().toISOString();
+        const now = new Date();
         const { data, error } = await supabaseClient.from("events")
-          .select("id,title,description,type,start_date,end_date")
+          .select("id,title,description,type,start_date,end_date,is_active")
           .eq("is_active", true)
-          .gte("start_date", now)
-          .order("start_date", { ascending: true })
-          .limit(30);
+          .order("start_date", { ascending: true, nullsFirst: false })
+          .limit(100);
         if (error) throw error;
-        const events = data || [];
+        const events = (data || []).filter(item => {
+          const end = item.end_date ? new Date(item.end_date) : null;
+          const start = item.start_date ? new Date(item.start_date) : null;
+          if (end && !Number.isNaN(end.getTime())) return end >= now;
+          if (start && !Number.isNaN(start.getTime())) return start >= now;
+          return !start && !end;
+        });
         section.replaceChildren();
-        if (!events.length) { section.classList.add("hidden"); return; }
-        section.classList.remove("hidden");
+        section.style.cssText = "padding:18px 18px 22px;max-width:850px;margin:0 auto;width:100%;scroll-margin-top:72px;";
         const heading = document.createElement("h2");
-        heading.textContent = "Événements programmés";
-        heading.style.cssText = "font-size:17px;font-weight:650;margin:0 0 10px;color:var(--text);";
+        heading.textContent = "Événements";
+        heading.style.cssText = "font-size:18px;font-weight:650;margin:0 0 12px;color:var(--text);";
+        section.appendChild(heading);
+        if (!events.length) {
+          const empty = document.createElement("p");
+          empty.textContent = "Aucun événement programmé pour le moment.";
+          empty.style.cssText = "font-size:14px;color:var(--muted);padding:12px 0;";
+          section.appendChild(empty);
+          section.classList.remove("hidden");
+          return;
+        }
         const list = document.createElement("div");
-        list.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;";
+        list.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:8px;";
         events.forEach(item => {
           const button = document.createElement("button");
           button.type = "button";
@@ -1712,16 +1726,25 @@
           button.title = "Afficher les détails";
           button.style.cssText = "display:block;width:100%;min-width:0;text-align:left;padding:12px 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
           button.addEventListener("click", () => {
-            const date = new Date(item.start_date);
-            const dateLabel = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("fr-FR", { dateStyle:"full", timeStyle:"short" });
-            const details = [dateLabel, item.type ? "Type : " + item.type : "", item.description || "Aucun détail supplémentaire."].filter(Boolean).join("\n\n");
+            const start = item.start_date ? new Date(item.start_date) : null;
+            const end = item.end_date ? new Date(item.end_date) : null;
+            const startLabel = start && !Number.isNaN(start.getTime()) ? "Début : " + start.toLocaleString("fr-FR", { dateStyle:"full", timeStyle:"short" }) : "";
+            const endLabel = end && !Number.isNaN(end.getTime()) ? "Fin : " + end.toLocaleString("fr-FR", { dateStyle:"full", timeStyle:"short" }) : "";
+            const details = [startLabel, endLabel, item.type ? "Type : " + item.type : "", item.description || "Aucun détail supplémentaire."].filter(Boolean).join("\n\n");
             showAluetooPopup(item.title || "Événement", details, [{label:"Fermer",value:"close",primary:true}], "#a5b4fc");
           });
           list.appendChild(button);
         });
-        section.append(heading, list);
+        section.appendChild(list);
+        section.classList.remove("hidden");
       } catch (error) {
         console.error("Chargement des événements impossible:", error);
+        section.replaceChildren();
+        section.classList.remove("hidden");
+        const message = document.createElement("p");
+        message.textContent = "Impossible de charger les événements. Réessaie dans un instant.";
+        message.style.cssText = "padding:12px 18px;color:var(--muted);";
+        section.appendChild(message);
       }
     }
 
@@ -1837,11 +1860,18 @@
         }
       });
       sendBtn.addEventListener("click", handleSendMessage);
+      document.getElementById("search-history").addEventListener("input", e => {
+        const query = e.target.value.trim().toLocaleLowerCase();
+        document.querySelectorAll("#history-list .alu-history-item-container").forEach(item => {
+          item.style.display = item.dataset.title.includes(query) ? "" : "none";
+        });
+      });
 
       document.getElementById("new-chat-btn").addEventListener("click", () => {
         document.getElementById("chat-messages").innerHTML = "";
         conversationHistory = [];
         currentActiveChatId = null;
+        currentActiveChatPinned = false;
         document.getElementById("welcome-screen").classList.remove("hidden");
         input.style.height = "auto";
         sidebar.classList.remove("active");
@@ -1864,6 +1894,7 @@
       document.getElementById("events-nav-btn").addEventListener("click", () => {
         document.getElementById("alu-sidebar").classList.remove("active");
         document.getElementById("sidebar-backdrop").classList.add("hidden");
+        await loadUpcomingEvents();
         const eventsSection = document.getElementById("upcoming-events");
         if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth", block: "start" });
       });
@@ -2079,7 +2110,7 @@
           }
         }
         conversationHistory.push({ role: "assistant", content: fullReply });
-        saveConversationToGlobal(text, fullReply);
+        await saveConversationToGlobal(text, fullReply);
       } catch (err) {
         console.error("Aluetoo backend error:", err);
         contentDiv.innerText = t("connectionError");
@@ -2114,116 +2145,158 @@
       return wrapper;
     }
 
-    function saveConversationToGlobal(userPrompt, aiReply) {
-      const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
-      let list = saved ? JSON.parse(saved) : [];
-      if (currentActiveChatId) {
-        const index = list.findIndex(c => c.id === currentActiveChatId);
-        if (index !== -1) {
-          list[index].history = [...conversationHistory];
-          localStorage.setItem(`alu_history_${currentUser.email}`, JSON.stringify(list));
-          loadSavedConversations();
-          return;
-        }
+    async function saveConversationToGlobal(userPrompt, aiReply) {
+      if (!currentUser?.id) return;
+      try {
+        if (!currentActiveChatId) currentActiveChatId = crypto.randomUUID();
+        const firstUserMessage = conversationHistory.find(message => message.role === "user")?.content || userPrompt || "Nouvelle conversation";
+        const { error } = await supabaseClient.from("aluetoo_conversations").upsert({
+          id: currentActiveChatId,
+          user_id: currentUser.id,
+          title: String(firstUserMessage).slice(0, 500),
+          messages: conversationHistory,
+          pinned: currentActiveChatPinned,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "id" });
+        if (error) throw error;
+        await loadSavedConversations();
+      } catch (error) {
+        console.error("Sauvegarde Supabase de la conversation impossible:", error);
       }
-      const newId = "chat_" + Date.now();
-      currentActiveChatId = newId;
-      list.push({
-        id: newId,
-        prompt: userPrompt,
-        reply: aiReply,
-        history: [...conversationHistory],
-        pinned: false,
-        timestamp: Date.now()
-      });
-      localStorage.setItem(`alu_history_${currentUser.email}`, JSON.stringify(list));
-      loadSavedConversations();
     }
 
-    function togglePinChat(id, e) {
+    async function togglePinChat(id, e) {
       e.stopPropagation();
-      const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
-      if (!saved) return;
-      let list = JSON.parse(saved);
-      const index = list.findIndex(c => c.id === id);
-      if (index !== -1) {
-        list[index].pinned = !list[index].pinned;
-        localStorage.setItem(`alu_history_${currentUser.email}`, JSON.stringify(list));
-        loadSavedConversations();
+      try {
+        const item = (window.aluetooConversationCache || []).find(chat => chat.id === id);
+        if (!item || !currentUser?.id) return;
+        const { error } = await supabaseClient.from("aluetoo_conversations")
+          .update({ pinned: !item.pinned, updated_at: new Date().toISOString() })
+          .eq("id", id).eq("user_id", currentUser.id);
+        if (error) throw error;
+        if (currentActiveChatId === id) currentActiveChatPinned = !item.pinned;
+        await loadSavedConversations();
+      } catch (error) {
+        console.error("Épinglage impossible:", error);
+        alert("Impossible de modifier cette discussion pour le moment.");
       }
     }
 
-    function deleteChat(id, e) {
+    async function deleteChat(id, e) {
       e.stopPropagation();
       if (!confirm(t("confirmDelete"))) return;
-      const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
-      if (!saved) return;
-      let list = JSON.parse(saved);
-      list = list.filter(c => c.id !== id);
-      localStorage.setItem(`alu_history_${currentUser.email}`, JSON.stringify(list));
-      if (currentActiveChatId === id) {
-        document.getElementById("chat-messages").innerHTML = "";
-        conversationHistory = [];
-        currentActiveChatId = null;
-        document.getElementById("welcome-screen").classList.remove("hidden");
+      try {
+        const { error } = await supabaseClient.from("aluetoo_conversations")
+          .delete().eq("id", id).eq("user_id", currentUser.id);
+        if (error) throw error;
+        if (currentActiveChatId === id) {
+          document.getElementById("chat-messages").replaceChildren();
+          conversationHistory = [];
+          currentActiveChatId = null;
+          currentActiveChatPinned = false;
+          document.getElementById("welcome-screen").classList.remove("hidden");
+        }
+        await loadSavedConversations();
+      } catch (error) {
+        console.error("Suppression de la discussion impossible:", error);
+        alert("Impossible de supprimer cette discussion pour le moment.");
       }
-      loadSavedConversations();
     }
 
-    function loadSavedConversations() {
+    async function loadSavedConversations() {
       const listContainer = document.getElementById("history-list");
-      const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
-      listContainer.innerHTML = "";
-      if (!saved || JSON.parse(saved).length === 0) {
-        listContainer.innerHTML = `<div class="alu-history-empty" id="txt-no-conv">${t("noConversation")}</div>`;
-        return;
-      }
-      let items = JSON.parse(saved);
-      items.sort((a, b) => {
-        if (a.pinned && !b.pinned) return -1;
-        if (!a.pinned && b.pinned) return 1;
-        return b.timestamp - a.timestamp;
-      });
-      items.forEach((item) => {
-        const title = item.prompt.length > 22 ? item.prompt.substring(0, 22) + "..." : item.prompt;
-        const container = document.createElement("div");
-        container.className = `alu-history-item-container ${item.pinned ? 'pinned' : ''}`;
-        const textBtn = document.createElement("button");
-        textBtn.className = "alu-history-btn-text";
-        textBtn.innerHTML = title;
-        textBtn.addEventListener("click", () => {
-          document.getElementById("welcome-screen").classList.add("hidden");
-          const chatMessages = document.getElementById("chat-messages");
-          chatMessages.innerHTML = "";
-          currentActiveChatId = item.id;
-          conversationHistory = item.history || [
-            { role: "user", content: item.prompt },
-            { role: "assistant", content: item.reply }
-          ];
-          conversationHistory.forEach(msg => {
-            appendMessageUI(msg.role, msg.role === 'assistant' ? formatAIResponse(msg.content) : msg.content);
+      if (!currentUser?.id) return;
+      listContainer.replaceChildren();
+      try {
+        const legacyKey = `alu_history_${currentUser.email}`;
+        const legacyRaw = localStorage.getItem(legacyKey);
+        if (legacyRaw) {
+          let legacy = [];
+          try { legacy = JSON.parse(legacyRaw) || []; } catch (_) {}
+          if (Array.isArray(legacy) && legacy.length) {
+            const cutoff = Date.now() - 15 * 24 * 60 * 60 * 1000;
+            const rows = legacy.filter(chat => Number(chat.timestamp || 0) >= cutoff).map(chat => {
+              const messages = Array.isArray(chat.history) && chat.history.length ? chat.history : [
+                { role:"user", content:chat.prompt || "Ancienne conversation" },
+                { role:"assistant", content:chat.reply || "" }
+              ];
+              const stamp = new Date(Number(chat.timestamp) || Date.now()).toISOString();
+              return {
+                id: crypto.randomUUID(), user_id: currentUser.id,
+                title: String(chat.prompt || "Ancienne conversation").slice(0,500),
+                messages, pinned: !!chat.pinned, created_at: stamp, updated_at: stamp
+              };
+            });
+            if (rows.length) {
+              const { error: importError } = await supabaseClient.from("aluetoo_conversations").insert(rows);
+              if (importError) throw importError;
+            }
+          }
+          localStorage.removeItem(legacyKey);
+        }
+        const { data, error } = await supabaseClient.from("aluetoo_conversations")
+          .select("id,title,messages,pinned,created_at,updated_at")
+          .eq("user_id", currentUser.id)
+          .order("pinned", { ascending:false })
+          .order("updated_at", { ascending:false });
+        if (error) throw error;
+        const items = data || [];
+        window.aluetooConversationCache = items;
+        if (!items.length) {
+          const empty = document.createElement("div");
+          empty.className = "alu-history-empty";
+          empty.textContent = t("noConversation");
+          listContainer.appendChild(empty);
+          return;
+        }
+        items.forEach(item => {
+          const messages = Array.isArray(item.messages) ? item.messages : [];
+          const firstPrompt = messages.find(message => message.role === "user")?.content || item.title || "Conversation";
+          const title = String(firstPrompt).length > 22 ? String(firstPrompt).substring(0,22) + "..." : String(firstPrompt);
+          const container = document.createElement("div");
+          container.className = `alu-history-item-container ${item.pinned ? "pinned" : ""}`;
+          container.dataset.title = String(firstPrompt).toLocaleLowerCase();
+          const textBtn = document.createElement("button");
+          textBtn.className = "alu-history-btn-text";
+          textBtn.textContent = title;
+          textBtn.addEventListener("click", () => {
+            document.getElementById("welcome-screen").classList.add("hidden");
+            const chatMessages = document.getElementById("chat-messages");
+            chatMessages.replaceChildren();
+            currentActiveChatId = item.id;
+            currentActiveChatPinned = !!item.pinned;
+            conversationHistory = messages;
+            conversationHistory.forEach(msg => {
+              appendMessageUI(msg.role, msg.role === "assistant" ? formatAIResponse(msg.content) : msg.content);
+            });
+            const containerWrap = document.getElementById("conversation-container");
+            containerWrap.scrollTop = containerWrap.scrollHeight;
+            document.getElementById("alu-sidebar").classList.remove("active");
+            document.getElementById("sidebar-backdrop").classList.add("hidden");
           });
-          const containerWrap = document.getElementById("conversation-container");
-          containerWrap.scrollTop = containerWrap.scrollHeight;
-          document.getElementById("alu-sidebar").classList.remove("active");
-          document.getElementById("sidebar-backdrop").classList.add("hidden");
+          const actionsDiv = document.createElement("div");
+          actionsDiv.className = "alu-history-actions";
+          const pinIcon = document.createElement("span");
+          pinIcon.className = `material-symbols-outlined alu-action-icon ${item.pinned ? "pinned-active" : ""}`;
+          pinIcon.textContent = "push_pin";
+          pinIcon.title = "Épingler";
+          pinIcon.addEventListener("click", e => togglePinChat(item.id, e));
+          const deleteIcon = document.createElement("span");
+          deleteIcon.className = "material-symbols-outlined alu-action-icon delete";
+          deleteIcon.textContent = "delete";
+          deleteIcon.title = "Supprimer";
+          deleteIcon.addEventListener("click", e => deleteChat(item.id, e));
+          actionsDiv.append(pinIcon, deleteIcon);
+          container.append(textBtn, actionsDiv);
+          listContainer.appendChild(container);
         });
-        const actionsDiv = document.createElement("div");
-        actionsDiv.className = "alu-history-actions";
-        const pinIcon = document.createElement("span");
-        pinIcon.className = `material-symbols-outlined alu-action-icon ${item.pinned ? 'pinned-active' : ''}`;
-        pinIcon.innerText = "push_pin";
-        pinIcon.addEventListener("click", (e) => togglePinChat(item.id, e));
-        const deleteIcon = document.createElement("span");
-        deleteIcon.className = "material-symbols-outlined alu-action-icon delete";
-        deleteIcon.innerText = "delete";
-        deleteIcon.addEventListener("click", (e) => deleteChat(item.id, e));
-        actionsDiv.appendChild(pinIcon);
-        actionsDiv.appendChild(deleteIcon);
-        container.appendChild(textBtn);
-        container.appendChild(actionsDiv);
-        listContainer.appendChild(container);
-      });
+      } catch (error) {
+        console.error("Chargement des conversations Supabase impossible:", error);
+        const message = document.createElement("div");
+        message.className = "alu-history-empty";
+        message.textContent = "Impossible de charger les conversations.";
+        listContainer.appendChild(message);
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {

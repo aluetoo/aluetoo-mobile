@@ -1470,54 +1470,72 @@
       initGoogleSignIn();
     }
 
+    function showAluetooPopup(titleText, bodyText, buttons, accent = "#8b9cff") {
+      return new Promise(resolve => {
+        const overlay = document.createElement("div");
+        overlay.style.cssText = "position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.76);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);";
+        const panel = document.createElement("section");
+        panel.style.cssText = "width:min(440px,100%);max-height:82vh;overflow:auto;background:#1d2430;border:1px solid #3c4a60;border-radius:24px;padding:24px;color:#f4f6fb;box-shadow:0 24px 90px rgba(0,0,0,.5);position:relative;";
+        const close = document.createElement("button");
+        close.type = "button"; close.textContent = "×"; close.setAttribute("aria-label","Fermer");
+        close.style.cssText = "position:absolute;right:14px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:#303b4c;color:#fff;font-size:25px;cursor:pointer;";
+        const title = document.createElement("h2");
+        title.textContent = titleText; title.style.cssText = "font-size:20px;font-weight:700;margin:4px 42px 14px 0;color:"+accent+";";
+        const body = document.createElement("p");
+        body.textContent = bodyText; body.style.cssText = "white-space:pre-wrap;line-height:1.6;color:#d7deea;font-size:15px;margin:0 0 22px;";
+        const actions = document.createElement("div");
+        actions.style.cssText = "display:flex;flex-direction:column;gap:9px;";
+        const finish = value => { overlay.remove(); resolve(value); };
+        close.addEventListener("click",()=>finish("close"));
+        overlay.addEventListener("click",e=>{if(e.target===overlay)finish("close");});
+        buttons.forEach(item=>{
+          const b=document.createElement("button");b.type="button";b.textContent=item.label;
+          b.style.cssText="width:100%;padding:12px 16px;border:1px solid #46546a;border-radius:13px;background:"+(item.primary?accent:"#2b3545")+";color:"+(item.primary?"#101522":"#e8edf5")+";font-weight:600;cursor:pointer;";
+          b.addEventListener("click",()=>finish(item.value));actions.appendChild(b);
+        });
+        panel.append(close,title,body,actions);overlay.appendChild(panel);document.body.appendChild(overlay);
+      });
+    }
+
     async function loadCommunityAnnouncements() {
-      const host = document.getElementById("community-announcements");
-      if (!host) return;
-      host.replaceChildren();
       try {
         const now = new Date().toISOString();
-        const { data, error } = await supabaseClient
-          .from("announcements")
+        const { data, error } = await supabaseClient.from("announcements")
           .select("id,title,content,priority,created_at,expires_at")
-          .eq("is_active", true)
-          .or("expires_at.is.null,expires_at.gt." + now)
-          .order("priority", { ascending: false })
-          .order("created_at", { ascending: false })
-          .limit(10);
+          .eq("is_active", true).order("priority",{ascending:false})
+          .order("created_at",{ascending:false}).limit(10);
         if (error) throw error;
-        const dismissed = new Set(JSON.parse(sessionStorage.getItem("alu_dismissed_announcements") || "[]"));
-        const visible = (data || []).filter(item => !dismissed.has(item.id));
-        if (!visible.length) { host.classList.add("hidden"); return; }
-        visible.forEach(item => {
-          const card = document.createElement("article");
-          card.style.cssText = "background:#202b3a;border:1px solid #46536a;border-radius:14px;padding:14px 16px;margin-bottom:10px;color:#e8edf5;";
-          const head = document.createElement("div");
-          head.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;";
-          const title = document.createElement("strong");
-          title.textContent = item.title || "Annonce Aluetoo";
-          const close = document.createElement("button");
-          close.type = "button";
-          close.textContent = "Masquer";
-          close.style.cssText = "font-size:12px;color:#c5d0e0;padding:4px 8px;border-radius:8px;background:#344258;";
-          close.addEventListener("click", () => {
-            const ids = new Set(JSON.parse(sessionStorage.getItem("alu_dismissed_announcements") || "[]"));
-            ids.add(item.id);
-            sessionStorage.setItem("alu_dismissed_announcements", JSON.stringify([...ids]));
-            card.remove();
-            if (!host.children.length) host.classList.add("hidden");
-          });
-          head.append(title, close);
-          const content = document.createElement("p");
-          content.style.cssText = "white-space:pre-wrap;margin:0;color:#d1d9e6;font-size:14px;";
-          content.textContent = item.content || "";
-          card.append(head, content);
-          host.appendChild(card);
-        });
-        host.classList.remove("hidden");
+        const hidden = new Set(JSON.parse(localStorage.getItem("alu_never_show_announcements") || "[]"));
+        const visible = (data || []).filter(item => (!item.expires_at || item.expires_at > now) && !hidden.has(item.id));
+        for (const item of visible) {
+          const choice = await showAluetooPopup(item.title || "Annonce Aluetoo", item.content || "",
+            [{label:"Fermer",value:"close"},{label:"Ne plus afficher ce message",value:"never"}],
+            "#a5b4fc");
+          if (choice === "never") {
+            hidden.add(item.id);
+            localStorage.setItem("alu_never_show_announcements",JSON.stringify([...hidden]));
+          }
+        }
       } catch (error) {
-        console.error("Chargement des annonces communautaires impossible:", error);
-        host.classList.add("hidden");
+        console.error("Chargement des annonces impossible:",error);
       }
+    }
+
+    async function loadBonusNotifications() {
+      if (!currentUser?.id) return;
+      try {
+        const {data,error}=await supabaseClient.from("user_notifications")
+          .select("id,title,message").eq("user_id",currentUser.id).is("read_at",null)
+          .order("created_at",{ascending:true}).limit(10);
+        if(error) throw error;
+        for(const item of (data||[])) {
+          await showAluetooPopup(item.title || "Bonus reçu !",item.message || "L’administration t’a offert des messages bonus.",
+            [{label:"Super, merci !",value:"ok",primary:true}],"#86efac");
+          const {error:readError}=await supabaseClient.from("user_notifications")
+            .update({read_at:new Date().toISOString()}).eq("id",item.id).eq("user_id",currentUser.id);
+          if(readError) console.error("Impossible de marquer la notification comme lue:",readError);
+        }
+      } catch(error) { console.error("Chargement des notifications bonus impossible:",error); }
     }
 
     function startApp() {
@@ -1535,7 +1553,7 @@
 
       applyLanguage(currentLang);
       loadSavedConversations();
-      loadCommunityAnnouncements();
+      loadCommunityAnnouncements().then(() => loadBonusNotifications());
       updateLimitCountersDisplay();
       checkGlobalLimits();
     }

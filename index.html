@@ -1625,10 +1625,16 @@
 
     function showAluetooPopup(titleText, bodyText, buttons, accent = "#8b9cff") {
       return new Promise(resolve => {
+        if (!document.getElementById("alu-popup-motion")) {
+          const motion = document.createElement("style");
+          motion.id = "alu-popup-motion";
+          motion.textContent = "@keyframes aluPopupIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes aluPopupOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(8px) scale(.97)}}@keyframes aluOverlayIn{from{opacity:0}to{opacity:1}}";
+          document.head.appendChild(motion);
+        }
         const overlay = document.createElement("div");
-        overlay.style.cssText = "position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.76);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);";
+        overlay.style.cssText = "position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.76);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);animation:aluOverlayIn .2s ease both;";
         const panel = document.createElement("section");
-        panel.style.cssText = "width:min(440px,100%);max-height:82vh;overflow:auto;background:#1d2430;border:1px solid #3c4a60;border-radius:24px;padding:24px;color:#f4f6fb;box-shadow:0 24px 90px rgba(0,0,0,.5);position:relative;";
+        panel.style.cssText = "width:min(440px,100%);max-height:82vh;overflow:auto;background:#1d2430;border:1px solid #3c4a60;border-radius:24px;padding:24px;color:#f4f6fb;box-shadow:0 24px 90px rgba(0,0,0,.5);position:relative;animation:aluPopupIn .24s cubic-bezier(.2,.8,.2,1) both;";
         const close = document.createElement("button");
         close.type = "button"; close.textContent = "×"; close.setAttribute("aria-label","Fermer");
         close.style.cssText = "position:absolute;right:14px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:#303b4c;color:#fff;font-size:25px;cursor:pointer;";
@@ -1638,7 +1644,13 @@
         body.textContent = bodyText; body.style.cssText = "white-space:pre-wrap;line-height:1.6;color:#d7deea;font-size:15px;margin:0 0 22px;";
         const actions = document.createElement("div");
         actions.style.cssText = "display:flex;flex-direction:column;gap:9px;";
-        const finish = value => { overlay.remove(); resolve(value); };
+        let closing = false;
+        const finish = value => {
+          if (closing) return; closing = true;
+          panel.style.animation = "aluPopupOut .16s ease both";
+          overlay.style.transition = "opacity .16s ease"; overlay.style.opacity = "0";
+          setTimeout(() => { overlay.remove(); resolve(value); }, 160);
+        };
         close.addEventListener("click",()=>finish("close"));
         overlay.addEventListener("click",e=>{if(e.target===overlay)finish("close");});
         buttons.forEach(item=>{
@@ -1687,8 +1699,6 @@
     }
 
     async function loadUpcomingEvents() {
-      const section = document.getElementById("upcoming-events");
-      if (!section) return;
       try {
         const now = new Date();
         const { data, error } = await supabaseClient.from("events")
@@ -1704,49 +1714,60 @@
           if (start && !Number.isNaN(start.getTime())) return start >= now;
           return !start && !end;
         });
-        section.replaceChildren();
-        section.style.cssText = "padding:18px 18px 22px;max-width:850px;margin:0 auto;width:100%;scroll-margin-top:72px;";
-        const heading = document.createElement("h2");
-        heading.textContent = "Événements";
-        heading.style.cssText = "font-size:18px;font-weight:650;margin:0 0 12px;color:var(--text);";
-        section.appendChild(heading);
-        if (!events.length) {
-          const empty = document.createElement("p");
-          empty.textContent = "Aucun événement programmé pour le moment.";
-          empty.style.cssText = "font-size:14px;color:var(--muted);padding:12px 0;";
-          section.appendChild(empty);
-          section.classList.remove("hidden");
-          return;
-        }
-        const list = document.createElement("div");
-        list.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:8px;";
-        events.forEach(item => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.textContent = item.title || "Événement";
-          button.title = "Afficher les détails";
-          button.style.cssText = "display:block;width:100%;min-width:0;text-align:left;padding:12px 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
-          button.addEventListener("click", () => {
-            const start = item.start_date ? new Date(item.start_date) : null;
-            const end = item.end_date ? new Date(item.end_date) : null;
-            const startLabel = start && !Number.isNaN(start.getTime()) ? "Début : " + start.toLocaleString("fr-FR", { dateStyle:"full", timeStyle:"short" }) : "";
-            const endLabel = end && !Number.isNaN(end.getTime()) ? "Fin : " + end.toLocaleString("fr-FR", { dateStyle:"full", timeStyle:"short" }) : "";
-            const details = [startLabel, endLabel, item.type ? "Type : " + item.type : "", item.description || "Aucun détail supplémentaire."].filter(Boolean).join("\n\n");
-            showAluetooPopup(item.title || "Événement", details, [{label:"Fermer",value:"close",primary:true}], "#a5b4fc");
-          });
-          list.appendChild(button);
-        });
-        section.appendChild(list);
-        section.classList.remove("hidden");
+        await showEventsListPopup(events);
       } catch (error) {
         console.error("Chargement des événements impossible:", error);
-        section.replaceChildren();
-        section.classList.remove("hidden");
-        const message = document.createElement("p");
-        message.textContent = "Impossible de charger les événements. Réessaie dans un instant.";
-        message.style.cssText = "padding:12px 18px;color:var(--muted);";
-        section.appendChild(message);
+        await showAluetooPopup("Événements", "Impossible de charger les événements. Réessaie dans un instant.", [{label:"Fermer",value:"close",primary:true}]);
       }
+    }
+
+    async function showEventsListPopup(events) {
+      if (!document.getElementById("alu-popup-motion")) {
+        const motion = document.createElement("style");
+        motion.id = "alu-popup-motion";
+        motion.textContent = "@keyframes aluPopupIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes aluPopupOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(8px) scale(.97)}}@keyframes aluOverlayIn{from{opacity:0}to{opacity:1}}";
+        document.head.appendChild(motion);
+      }
+      return new Promise(resolve => {
+        const overlay=document.createElement("div");
+        overlay.style.cssText="position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.76);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);animation:aluOverlayIn .2s ease both;";
+        const panel=document.createElement("section");
+        panel.style.cssText="width:min(440px,100%);max-height:82vh;overflow:auto;background:#1d2430;border:1px solid #3c4a60;border-radius:24px;padding:24px;color:#f4f6fb;box-shadow:0 24px 90px rgba(0,0,0,.5);position:relative;animation:aluPopupIn .24s cubic-bezier(.2,.8,.2,1) both;";
+        const close=document.createElement("button");close.type="button";close.textContent="×";close.setAttribute("aria-label","Fermer");
+        close.style.cssText="position:absolute;right:14px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:#303b4c;color:#fff;font-size:25px;cursor:pointer;";
+        const title=document.createElement("h2");title.textContent="Événements";title.style.cssText="font-size:20px;font-weight:700;margin:4px 42px 16px 0;color:#a5b4fc;";
+        const list=document.createElement("div");list.style.cssText="display:flex;flex-direction:column;gap:9px;";
+        let closing=false;
+        const finish=()=>{if(closing)return;closing=true;panel.style.animation="aluPopupOut .16s ease both";overlay.style.transition="opacity .16s ease";overlay.style.opacity="0";setTimeout(()=>{overlay.remove();resolve();},160);};
+        close.addEventListener("click",finish);
+        overlay.addEventListener("click",e=>{if(e.target===overlay)finish();});
+        if(!events.length){
+          const empty=document.createElement("p");empty.textContent="Aucun événement programmé pour le moment.";
+          empty.style.cssText="padding:12px 0;color:#d7deea;font-size:14px;line-height:1.6;";
+          list.appendChild(empty);
+        } else {
+          events.forEach(item=>{
+            const button=document.createElement("button");button.type="button";
+            button.style.cssText="width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:13px 14px;border:1px solid #3c4a60;border-radius:14px;background:#2b3545;color:#f4f6fb;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,transform .15s;";
+            const name=document.createElement("span");name.textContent=item.title||"Événement";name.style.cssText="min-width:0;overflow-wrap:anywhere;";
+            const arrow=document.createElement("span");arrow.textContent="›";arrow.style.cssText="font-size:23px;color:#a5b4fc;flex-shrink:0;";
+            button.append(name,arrow);
+            button.addEventListener("mouseenter",()=>{button.style.background="#354258";button.style.borderColor="#7182bd";});
+            button.addEventListener("mouseleave",()=>{button.style.background="#2b3545";button.style.borderColor="#3c4a60";});
+            button.addEventListener("click",async()=>{
+              finish();
+              const start=item.start_date?new Date(item.start_date):null;
+              const end=item.end_date?new Date(item.end_date):null;
+              const startLabel=start&&!Number.isNaN(start.getTime())?"Début : "+start.toLocaleString("fr-FR",{dateStyle:"full",timeStyle:"short"}):"";
+              const endLabel=end&&!Number.isNaN(end.getTime())?"Fin : "+end.toLocaleString("fr-FR",{dateStyle:"full",timeStyle:"short"}):"";
+              const details=[startLabel,endLabel,item.type?"Type : "+item.type:"",item.description||"Aucun détail supplémentaire."].filter(Boolean).join("\\n\\n");
+              setTimeout(()=>showAluetooPopup(item.title||"Événement",details,[{label:"Fermer",value:"close",primary:true}],"#a5b4fc"),170);
+            });
+            list.appendChild(button);
+          });
+        }
+        panel.append(close,title,list);overlay.appendChild(panel);document.body.appendChild(overlay);
+      });
     }
 
     async function loadCommunityAnnouncements() {
@@ -1910,8 +1931,7 @@
         document.getElementById("alu-sidebar").classList.remove("active");
         document.getElementById("sidebar-backdrop").classList.add("hidden");
         await loadUpcomingEvents();
-        const eventsSection = document.getElementById("upcoming-events");
-        if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+
       });
 
       const realFileInput = document.getElementById("real-file-input");

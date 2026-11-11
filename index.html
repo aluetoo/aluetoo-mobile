@@ -2246,6 +2246,7 @@
                response.status === 429 ? "Limite de messages atteinte. Réessaie plus tard." :
                "Le service IA est momentanément indisponible.");
           }
+          statusDiv.remove();
           conversationHistory.pop();
           return;
         }

@@ -1743,15 +1743,11 @@
         close.addEventListener("click",finish);
         overlay.addEventListener("click",e=>{if(e.target===overlay)finish();});
         const dateLocale=currentLang==="pl"?"pl-PL":"fr-FR";
-        const start=item.start_date?new Date(item.start_date):null;
         const end=item.end_date?new Date(item.end_date):null;
         const formatDate=value=>value&&!Number.isNaN(value.getTime())?value.toLocaleString(dateLocale,{dateStyle:"full",timeStyle:"short"}):"";
-        const startLabel=document.createElement("div");
-        startLabel.textContent=start&&!Number.isNaN(start.getTime())?t("eventStarts")+" : "+formatDate(start):"";
-        startLabel.style.cssText="font-size:15px;font-weight:650;line-height:1.5;color:#a5b4fc;margin:2px 42px 6px 0;";
         const endLabel=document.createElement("div");
         endLabel.textContent=end&&!Number.isNaN(end.getTime())?t("eventEnds")+" : "+formatDate(end):"";
-        endLabel.style.cssText="font-size:14px;font-weight:600;line-height:1.5;color:#a5b4fc;margin:0 42px 12px 0;";
+        endLabel.style.cssText="font-size:15px;font-weight:650;line-height:1.5;color:#a5b4fc;margin:2px 42px 12px 0;";
         const title=document.createElement("h2");
         title.textContent=item.title||t("eventPopupTitle");
         title.style.cssText="font-size:20px;font-weight:700;margin:0 42px 14px 0;color:#a5b4fc;overflow-wrap:anywhere;";
@@ -1763,7 +1759,7 @@
         const button=document.createElement("button");button.type="button";button.textContent=t("close");
         button.style.cssText="width:100%;padding:11px 16px;border:1px solid #59698a;border-radius:12px;background:#303b4c;color:#fff;font-weight:600;cursor:pointer;";
         button.addEventListener("click",finish);actions.appendChild(button);
-        panel.append(close,startLabel,endLabel,title,description,actions);overlay.appendChild(panel);document.body.appendChild(overlay);
+        panel.append(close,endLabel,title,description,actions);overlay.appendChild(panel);document.body.appendChild(overlay);
       });
     }
 

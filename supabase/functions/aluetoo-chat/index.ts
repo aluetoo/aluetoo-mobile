@@ -55,7 +55,7 @@ Deno.serve(async (req: Request) => {
   catch { return jsonResponse(400, { error: "invalid_json" }); }
 
   const modelKey = payload.modelKey || "";
-  if (!(modelKey in MODEL_LIMITS)) return jsonResponse(400, { error: "invalid_model" });
+  if (!Object.prototype.hasOwnProperty.call(MODEL_LIMITS, modelKey)) return jsonResponse(400, { error: "invalid_model" });
   if (!Array.isArray(payload.messages) || payload.messages.length < 1 || payload.messages.length > 50) {
     return jsonResponse(400, { error: "invalid_messages" });
   }

@@ -1497,6 +1497,42 @@
       });
     }
 
+    async function loadBanStatus() {
+      if (!currentUser?.id) return;
+      try {
+        const {data,error}=await supabaseClient.from("user_controls")
+          .select("is_banned,ban_reason,ban_until,ban_permanent")
+          .eq("user_id",currentUser.id).maybeSingle();
+        if(error) throw error;
+        if(!data?.is_banned) return;
+        const permanent=!!data.ban_permanent;
+        const until=data.ban_until ? new Date(data.ban_until).getTime() : 0;
+        if(!permanent && (!until || until<=Date.now())) return;
+        await new Promise(resolve=>{
+          const overlay=document.createElement("div");
+          overlay.style.cssText="position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);";
+          const panel=document.createElement("section");
+          panel.style.cssText="width:min(440px,100%);background:#241d25;border:1px solid #7f3c4a;border-radius:24px;padding:25px;color:#f9e8eb;box-shadow:0 24px 90px rgba(0,0,0,.55);position:relative;";
+          const close=document.createElement("button");close.type="button";close.textContent="×";close.setAttribute("aria-label","Fermer");
+          close.style.cssText="position:absolute;right:14px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:#49303a;color:#fff;font-size:25px;cursor:pointer;";
+          const title=document.createElement("h2");title.textContent="Compte banni";title.style.cssText="font-size:21px;font-weight:750;margin:5px 40px 14px 0;color:#fda4af;";
+          const reason=document.createElement("p");reason.textContent="Vous êtes banni pour la raison suivante : "+(data.ban_reason||"Non précisée.");
+          reason.style.cssText="white-space:pre-wrap;line-height:1.55;color:#f3dce1;font-size:15px;margin:0 0 16px;";
+          const timer=document.createElement("p");timer.style.cssText="font-weight:700;color:#fda4af;margin:0;";
+          const finish=()=>{if(interval)clearInterval(interval);overlay.remove();resolve();};
+          close.addEventListener("click",finish);
+          overlay.addEventListener("click",e=>{if(e.target===overlay)finish();});
+          let interval=null;
+          if(permanent){timer.textContent="Bannissement permanent — contacte l’équipe Aluetoo si tu penses qu’il s’agit d’une erreur.";}
+          else {
+            const update=()=>{const secs=Math.max(0,Math.ceil((until-Date.now())/1000));timer.textContent=secs>0?"Temps restant : "+Math.floor(secs/60)+" min "+(secs%60)+" s":"Le bannissement est terminé. Tu peux réessayer.";if(secs===0&&interval){clearInterval(interval);interval=null;}};
+            update();interval=setInterval(update,1000);
+          }
+          panel.append(close,title,reason,timer);overlay.appendChild(panel);document.body.appendChild(overlay);
+        });
+      } catch(error) { console.error("Vérification du bannissement impossible:",error); }
+    }
+
     async function loadCommunityAnnouncements() {
       try {
         const now = new Date().toISOString();
@@ -1553,7 +1589,7 @@
 
       applyLanguage(currentLang);
       loadSavedConversations();
-      loadCommunityAnnouncements().then(() => loadBonusNotifications());
+      loadBanStatus().then(() => loadCommunityAnnouncements()).then(() => loadBonusNotifications());
       updateLimitCountersDisplay();
       checkGlobalLimits();
     }

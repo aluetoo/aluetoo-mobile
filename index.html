@@ -1007,7 +1007,7 @@
       <div class="alu-activity">
         <button class="alu-nav-item" id="events-nav-btn" type="button">
           <span class="material-symbols-outlined">event</span>
-          <span>Événements</span>
+          <span id="txt-activity">Événements</span>
         </button>
       </div>
       <div class="alu-user-block">
@@ -1227,7 +1227,7 @@
         modeCode: "Mode Code",
         last: "Le dernier",
         noConversation: "Aucune conversation",
-        activity: "Activité",
+        activity: "Événements",
         locDesc: "En fonction de votre lieu de résidence",
         updateLocation: "Mettre à jour l'emplacement",
         settingsTitle: "Paramètres",
@@ -1273,7 +1273,7 @@
         modeCode: "Tryb kodu",
         last: "Ostatnie",
         noConversation: "Brak rozmów",
-        activity: "Aktywność",
+        activity: "Wydarzenia",
         locDesc: "Na podstawie Twojej lokalizacji",
         updateLocation: "Zaktualizuj lokalizację",
         settingsTitle: "Ustawienia",
@@ -1891,7 +1891,7 @@
         if (newLoc) document.getElementById("current-location").innerText = newLoc;
       });
 
-      document.getElementById("events-nav-btn").addEventListener("click", () => {
+      document.getElementById("events-nav-btn").addEventListener("click", async () => {
         document.getElementById("alu-sidebar").classList.remove("active");
         document.getElementById("sidebar-backdrop").classList.add("hidden");
         await loadUpcomingEvents();

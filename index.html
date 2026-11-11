@@ -1789,10 +1789,31 @@
             };
             updateLimitCountersDisplay();
           }
-          contentDiv.innerText = errorData.message ||
-            (response.status === 403 ? "Ce compte est bloqué." :
-             response.status === 429 ? "Limite de messages atteinte. Réessaie plus tard." :
-             "Le service IA est momentanément indisponible.");
+          if (errorData.error === "account_banned" && errorData.ban) {
+            const ban = errorData.ban;
+            contentDiv.textContent = ban.permanent
+              ? "Vous êtes banni à vie. Raison : " + (ban.reason || "Non précisée.")
+              : "Vous êtes banni pour la raison suivante : " + (ban.reason || "Non précisée.");
+            if (!ban.permanent && ban.ban_until) {
+              const counter = document.createElement("p");
+              counter.style.cssText = "margin-top:10px;color:#fca5a5;font-weight:700;";
+              contentDiv.appendChild(counter);
+              const updateBanCounter = () => {
+                const seconds = Math.max(0,Math.ceil((new Date(ban.ban_until).getTime()-Date.now())/1000));
+                counter.textContent = seconds > 0
+                  ? "Temps restant : " + Math.floor(seconds/60) + " min " + (seconds%60) + " s"
+                  : "Le bannissement est terminé. Tu peux réessayer.";
+                if (seconds <= 0) clearInterval(banTimer);
+              };
+              updateBanCounter();
+              const banTimer = setInterval(updateBanCounter,1000);
+            }
+          } else {
+            contentDiv.innerText = errorData.message ||
+              (response.status === 403 ? "Ce compte est bloqué." :
+               response.status === 429 ? "Limite de messages atteinte. Réessaie plus tard." :
+               "Le service IA est momentanément indisponible.");
+          }
           conversationHistory.pop();
           return;
         }

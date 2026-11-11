@@ -37,7 +37,7 @@ DECLARE
   v_allow boolean := false;
   v_reason text := 'ok';
 BEGIN
-  IF p_user_id IS NULL OR p_model_key NOT IN ('fast-lite','super-fast','pro') THEN
+  IF p_user_id IS NULL OR p_model_key IS NULL OR p_model_key NOT IN ('fast-lite','super-fast','pro') THEN
     RAISE EXCEPTION 'invalid_request' USING ERRCODE = '22023';
   END IF;
 

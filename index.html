@@ -1202,6 +1202,7 @@
     let currentAttachedFile = null;
     let currentActiveChatId = null;
     let currentActiveChatPinned = false;
+    let conversationsRealtimeChannel = null;
     let currentLang = localStorage.getItem("alu_lang") || "fr";
     let accountSecurityFlow = null;
     let accountVerifiedForAction = false;
@@ -1789,6 +1790,20 @@
       } catch(error) { console.error("Chargement des notifications bonus impossible:",error); }
     }
 
+    function setupConversationsRealtime() {
+      if (!currentUser?.id) return;
+      if (conversationsRealtimeChannel) supabaseClient.removeChannel(conversationsRealtimeChannel);
+      conversationsRealtimeChannel = supabaseClient
+        .channel("aluetoo-conversations-" + currentUser.id)
+        .on("postgres_changes", {
+          event: "*", schema: "public", table: "aluetoo_conversations",
+          filter: "user_id=eq." + currentUser.id
+        }, () => {
+          loadSavedConversations();
+        })
+        .subscribe();
+    }
+
     function startApp() {
       document.getElementById("auth-screen").classList.add("hidden");
       document.getElementById("app-container").classList.remove("hidden");
@@ -1804,6 +1819,7 @@
 
       applyLanguage(currentLang);
       loadSavedConversations();
+      setupConversationsRealtime();
       loadBanStatus().then(() => loadUpcomingEvents()).then(() => loadCommunityAnnouncements()).then(() => loadBonusNotifications());
       updateLimitCountersDisplay();
       checkGlobalLimits();

@@ -1397,11 +1397,26 @@
     }
 
     // ========== SUPABASE AUTH ==========
+    let googleSignInNonce = null;
+
+    async function createGoogleSignInNonce() {
+      const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
+      const encodedNonce = new TextEncoder().encode(nonce);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", encodedNonce);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashedNonce = hashArray.map(byte => byte.toString(16).padStart(2, "0")).join("");
+      return { nonce, hashedNonce };
+    }
+
     async function handleGoogleCredentialResponse(response) {
       try {
+        if (!response?.credential || !googleSignInNonce) {
+          throw new Error("Google n’a pas renvoyé de jeton de connexion valide. Réessaie.");
+        }
         const { data, error } = await supabaseClient.auth.signInWithIdToken({
           provider: "google",
-          token: response.credential
+          token: response.credential,
+          nonce: googleSignInNonce
         });
         if (error) throw error;
         authSession = data.session;
@@ -1418,29 +1433,41 @@
       }
     }
 
-    function initGoogleSignIn() {
+    async function initGoogleSignIn() {
       if (typeof google === "undefined" || !google.accounts) {
         setTimeout(initGoogleSignIn, 400);
         return;
       }
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
-      google.accounts.id.renderButton(
-        document.getElementById("google-btn-container"),
-        {
-          type: "standard",
-          theme: "filled_black",
-          size: "large",
-          text: "signin_with",
-          shape: "pill",
-          logo_alignment: "left",
-          width: 320
-        }
-      );
+      const buttonContainer = document.getElementById("google-btn-container");
+      if (!buttonContainer) return;
+      try {
+        const nonceData = await createGoogleSignInNonce();
+        googleSignInNonce = nonceData.nonce;
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredentialResponse,
+          nonce: nonceData.hashedNonce,
+          use_fedcm_for_prompt: true,
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+        buttonContainer.innerHTML = "";
+        google.accounts.id.renderButton(
+          buttonContainer,
+          {
+            type: "standard",
+            theme: "filled_black",
+            size: "large",
+            text: "signin_with",
+            shape: "pill",
+            logo_alignment: "left",
+            width: 320
+          }
+        );
+      } catch (err) {
+        console.error("Initialisation Google impossible :", err);
+        alert(t("googleError"));
+      }
     }
 
 

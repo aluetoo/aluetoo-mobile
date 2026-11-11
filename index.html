@@ -10,6 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
     tailwind.config = {
       corePlugins: { preflight: true }
@@ -957,6 +958,17 @@
           Se connecter
         </button>
       </form>
+
+      <!-- Bouton Google -->
+      <div class="mt-5 flex flex-col items-center gap-3">
+        <div class="w-full flex items-center gap-3 text-xs text-[#9aa0a6]">
+          <div class="flex-1 h-px bg-[#303133]"></div>
+          <span id="txt-or">ou</span>
+          <div class="flex-1 h-px bg-[#303133]"></div>
+        </div>
+        <div id="google-btn-container" class="w-full flex justify-center"></div>
+      </div>
+
       <div class="mt-6 text-center text-xs text-[#9aa0a6]">
         <span id="auth-toggle-text">Pas encore de compte ?</span>
         <button id="auth-toggle-btn" class="underline ml-1 focus:outline-none" style="color: var(--accent);">Créer un compte</button>
@@ -1144,6 +1156,10 @@
   </div>
   <script>
     const GROQ_API_KEY = "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";
+    
+    // ⚠️
+    const GOOGLE_CLIENT_ID = "619367591618-qa36e2ibh8e3f0gv0eknkhhfro4a6g9n.apps.googleusercontent.com";
+
     const modelsConfig = {
       "fast-lite": { name: "Aluetoo Fast Lite", apiName: "openai/gpt-oss-20b", limit: 20, pill: "Fast Lite" },
       "super-fast": { name: "Aluetoo Super Fast", apiName: "qwen/qwen3.8-27b", limit: 10, pill: "Super Fast" },
@@ -1173,6 +1189,7 @@
         toggleTextHasAccount: "Déjà un compte ?",
         toggleBtnCreate: "Créer un compte",
         toggleBtnLogin: "Se connecter",
+        or: "ou",
         // Sidebar
         newChat: "Nouvelle conversation",
         searchHistory: "Rechercher une discussion...",
@@ -1208,7 +1225,8 @@
         bonusGranted: "Bonus accordé !",
         confirmDelete: "Voulez-vous supprimer cette discussion ?",
         enterLocation: "Entrez votre pays ou localisation :",
-        connectionError: "Erreur de connexion en direct."
+        connectionError: "Erreur de connexion en direct.",
+        googleError: "Erreur lors de la connexion Google."
       },
       pl: {
         // Auth
@@ -1225,6 +1243,7 @@
         toggleTextHasAccount: "Masz już konto?",
         toggleBtnCreate: "Utwórz konto",
         toggleBtnLogin: "Zaloguj się",
+        or: "lub",
         // Sidebar
         newChat: "Nowa rozmowa",
         searchHistory: "Szukaj rozmowy...",
@@ -1260,7 +1279,8 @@
         bonusGranted: "Bonus przyznany!",
         confirmDelete: "Czy chcesz usunąć tę rozmowę?",
         enterLocation: "Wprowadź swój kraj lub lokalizację:",
-        connectionError: "Błąd połączenia na żywo."
+        connectionError: "Błąd połączenia na żywo.",
+        googleError: "Błąd logowania Google."
       }
     };
 
@@ -1284,6 +1304,7 @@
       document.getElementById("auth-submit-btn").innerText = isSignUp ? t("btnSignup") : t("btnLogin");
       document.getElementById("auth-toggle-text").innerText = isSignUp ? t("toggleTextHasAccount") : t("toggleTextNoAccount");
       document.getElementById("auth-toggle-btn").innerText = isSignUp ? t("toggleBtnLogin") : t("toggleBtnCreate");
+      document.getElementById("txt-or").innerText = t("or");
 
       // Auth lang buttons
       document.getElementById("auth-lang-fr").classList.toggle("active", lang === "fr");
@@ -1381,12 +1402,64 @@
       document.getElementById("input-model-indicator").innerText = modelsConfig[key].pill;
       checkGlobalLimits();
     }
+
+    // ========== GOOGLE SIGN-IN ==========
+    function handleGoogleCredentialResponse(response) {
+      try {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        const email = payload.email.toLowerCase();
+        const firstname = payload.given_name || (payload.name ? payload.name.split(' ')[0] : "Utilisateur");
+
+        let savedUser = localStorage.getItem(`user_${email}`);
+        if (savedUser) {
+          currentUser = JSON.parse(savedUser);
+        } else {
+          currentUser = {
+            firstname: firstname,
+            email: email,
+            password: null,
+            authProvider: "google"
+          };
+          localStorage.setItem(`user_${email}`, JSON.stringify(currentUser));
+        }
+
+        localStorage.setItem("alu_session", JSON.stringify(currentUser));
+        startApp();
+      } catch (err) {
+        console.error("Erreur Google Sign-In :", err);
+        alert(t("googleError"));
+      }
+    }
+
+    function initGoogleSignIn() {
+      if (typeof google === "undefined" || !google.accounts) {
+        setTimeout(initGoogleSignIn, 400);
+        return;
+      }
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById("google-btn-container"),
+        {
+          type: "standard",
+          theme: "filled_black",
+          size: "large",
+          text: "signin_with",
+          shape: "rectangular",
+          logo_alignment: "left",
+          width: 320
+        }
+      );
+    }
+
     function setupAuth() {
       const authForm = document.getElementById("auth-form");
-      const authTitle = document.getElementById("auth-title");
-      const authSubmitBtn = document.getElementById("auth-submit-btn");
-      const authToggleBtn = document.getElementById("auth-toggle-btn");
-      const authToggleText = document.getElementById("auth-toggle-text");
       const firstnameField = document.getElementById("firstname-field");
       let isSignUpMode = false;
 
@@ -1394,7 +1467,7 @@
       document.getElementById("auth-lang-fr").addEventListener("click", () => applyLanguage("fr"));
       document.getElementById("auth-lang-pl").addEventListener("click", () => applyLanguage("pl"));
 
-      authToggleBtn.addEventListener("click", (e) => {
+      document.getElementById("auth-toggle-btn").addEventListener("click", (e) => {
         e.preventDefault();
         isSignUpMode = !isSignUpMode;
         if (isSignUpMode) {
@@ -1402,8 +1475,9 @@
         } else {
           firstnameField.classList.add("hidden");
         }
-        applyLanguage(currentLang); // refresh texts
+        applyLanguage(currentLang);
       });
+
       authForm.addEventListener("submit", (e) => {
         e.preventDefault();
         const email = document.getElementById("auth-email").value.trim().toLowerCase();
@@ -1430,12 +1504,17 @@
         localStorage.setItem("alu_session", JSON.stringify(currentUser));
         startApp();
       });
+
       const activeSession = localStorage.getItem("alu_session");
       if (activeSession) {
         currentUser = JSON.parse(activeSession);
         startApp();
       }
+
+      // Initialisation du bouton Google
+      initGoogleSignIn();
     }
+
     function startApp() {
       document.getElementById("auth-screen").classList.add("hidden");
       document.getElementById("app-container").classList.remove("hidden");
@@ -1446,12 +1525,14 @@
       updateLimitCountersDisplay();
       checkGlobalLimits();
     }
+
     function getDailyCodeDetails() {
       const d = new Date();
       const day = String(d.getDate()).padStart(2, '0');
       const month = String(d.getMonth() + 1).padStart(2, '0');
       return { dateStr: `${d.getFullYear()}-${month}-${day}`, code: `ALU-${day}${month}` };
     }
+
     function setupUI() {
       const modelToggleBtn = document.getElementById("input-model-indicator-btn");
       const modelDropdownBottom = document.getElementById("model-dropdown-bottom");
@@ -1577,6 +1658,7 @@
         bonusModal.classList.add("hidden");
         checkGlobalLimits();
       });
+
       /* ============================================================
          PARAMÈTRES + COULEURS D'ACCENTUATION + LANGUE
          ============================================================ */
@@ -1627,6 +1709,7 @@
       // Apply saved language on load
       applyLanguage(currentLang);
     }
+
     async function handleSendMessage() {
       const input = document.getElementById("chat-input");
       let text = input.value.trim();

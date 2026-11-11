@@ -953,6 +953,7 @@
         <div>
           <label class="block text-xs text-[#9aa0a6] mb-1 font-medium" id="label-password">Mot de passe</label>
           <input type="password" id="auth-password" required class="w-full bg-[#131314] border border-[#303133] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent)]" placeholder="••••••••">
+          <button type="button" id="forgot-password-btn" class="text-xs underline mt-2" style="color:var(--accent)">Mot de passe oublié ?</button>
         </div>
         <button type="submit" id="auth-submit-btn" class="w-full rounded-xl py-3 text-sm font-medium transition mt-2" style="background: var(--accent-strong); color: #0d0e0f;">
           Se connecter
@@ -1131,6 +1132,38 @@
           <button class="alu-color-swatch" data-color="orange" style="background:#f97316" title="Orange"></button>
         </div>
       </div>
+      <div class="settings-section">
+        <p class="settings-section-title">Sécurité du compte</p>
+        <p class="text-xs text-[#9aa0a6] mb-3">Compte : <span id="account-settings-email"></span></p>
+        <button type="button" id="change-password-btn" class="w-full rounded-xl border border-[#45464a] px-4 py-3 text-sm text-left mb-2">Changer mon mot de passe</button>
+        <button type="button" id="delete-account-btn" class="w-full rounded-xl border border-red-500/50 px-4 py-3 text-sm text-left text-red-300">Supprimer définitivement mon compte</button>
+        <p class="text-xs text-[#9aa0a6] mt-2">Un code de vérification sera envoyé à l’adresse e-mail du compte.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ACCOUNT SECURITY MODAL -->
+  <div id="account-security-modal" class="fixed inset-0 bg-black/75 z-[80] flex items-center justify-center p-4 hidden">
+    <div class="bg-[#1e1f20] border border-[#45464a] p-6 rounded-2xl w-full max-w-md shadow-2xl">
+      <h3 id="account-modal-title" class="text-lg font-semibold mb-2">Sécurité du compte</h3>
+      <p id="account-modal-description" class="text-sm text-[#aeb2b8] mb-4">Vérifie ton adresse e-mail.</p>
+      <label class="block text-xs text-[#9aa0a6] mb-1">Adresse e-mail</label>
+      <input id="account-modal-email" type="email" autocomplete="email" class="w-full bg-[#131314] border border-[#45464a] rounded-xl px-4 py-3 text-sm mb-3" />
+      <button id="account-send-code-btn" type="button" class="w-full rounded-xl py-3 text-sm font-medium mb-3" style="background:var(--accent-strong);color:#0d0e0f">Envoyer le code</button>
+      <div id="account-code-step" class="hidden">
+        <label class="block text-xs text-[#9aa0a6] mb-1">Code reçu par e-mail</label>
+        <input id="account-modal-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" class="w-full bg-[#131314] border border-[#45464a] rounded-xl px-4 py-3 text-sm mb-3" placeholder="Code de vérification" />
+        <button id="account-verify-code-btn" type="button" class="w-full rounded-xl py-3 text-sm font-medium mb-3" style="background:var(--accent-strong);color:#0d0e0f">Vérifier le code</button>
+      </div>
+      <div id="account-password-step" class="hidden">
+        <label class="block text-xs text-[#9aa0a6] mb-1">Nouveau mot de passe</label>
+        <input id="account-new-password" type="password" autocomplete="new-password" minlength="8" class="w-full bg-[#131314] border border-[#45464a] rounded-xl px-4 py-3 text-sm mb-3" placeholder="8 caractères minimum" />
+        <label class="block text-xs text-[#9aa0a6] mb-1">Confirmer le mot de passe</label>
+        <input id="account-confirm-password" type="password" autocomplete="new-password" minlength="8" class="w-full bg-[#131314] border border-[#45464a] rounded-xl px-4 py-3 text-sm mb-3" placeholder="Répète le mot de passe" />
+        <button id="account-save-password-btn" type="button" class="w-full rounded-xl py-3 text-sm font-medium mb-3" style="background:var(--accent-strong);color:#0d0e0f">Enregistrer le nouveau mot de passe</button>
+      </div>
+      <button id="account-modal-cancel-btn" type="button" class="w-full text-sm text-[#aeb2b8] py-2">Annuler</button>
     </div>
   </div>
 
@@ -1168,6 +1201,8 @@
     let currentAttachedFile = null;
     let currentActiveChatId = null;
     let currentLang = localStorage.getItem("alu_lang") || "fr";
+    let accountSecurityFlow = null;
+    let accountVerifiedForAction = false;
 
     const translations = {
       fr: {
@@ -1393,11 +1428,124 @@
       );
     }
 
+
+    function openAccountSecurityModal(flow) {
+      accountSecurityFlow = flow;
+      accountVerifiedForAction = false;
+      const modal = document.getElementById("account-security-modal");
+      const emailInput = document.getElementById("account-modal-email");
+      emailInput.value = currentUser?.email || document.getElementById("auth-email").value.trim().toLowerCase();
+      emailInput.readOnly = !!currentUser;
+      document.getElementById("account-modal-code").value = "";
+      document.getElementById("account-new-password").value = "";
+      document.getElementById("account-confirm-password").value = "";
+      document.getElementById("account-code-step").classList.add("hidden");
+      document.getElementById("account-password-step").classList.add("hidden");
+      document.getElementById("account-send-code-btn").classList.remove("hidden");
+      document.getElementById("account-modal-title").textContent =
+        flow === "recovery" ? "Réinitialiser le mot de passe" :
+        flow === "delete" ? "Supprimer le compte" : "Changer le mot de passe";
+      document.getElementById("account-modal-description").textContent =
+        flow === "recovery" ? "Un code sera envoyé à l’adresse e-mail de ton compte." :
+        flow === "delete" ? "Confirme ton identité par e-mail avant la suppression définitive." :
+        "Pour protéger ton compte, confirme ton identité avec le code envoyé par e-mail.";
+      modal.classList.remove("hidden");
+    }
+
+    async function sendAccountVerificationCode() {
+      const email = document.getElementById("account-modal-email").value.trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Saisis une adresse e-mail valide.");
+      if (accountSecurityFlow !== "recovery" && (!currentUser || email !== currentUser.email.toLowerCase())) {
+        throw new Error("L’adresse e-mail doit être celle du compte connecté.");
+      }
+      let result;
+      if (accountSecurityFlow === "recovery") {
+        result = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + window.location.pathname
+        });
+      } else {
+        result = await supabaseClient.auth.reauthenticate();
+      }
+      if (result?.error) throw result.error;
+      document.getElementById("account-code-step").classList.remove("hidden");
+      document.getElementById("account-send-code-btn").classList.add("hidden");
+      document.getElementById("account-modal-description").textContent =
+        "Code envoyé si cette adresse correspond à un compte. Vérifie aussi tes courriers indésirables.";
+    }
+
+    async function verifyAccountSecurityCode() {
+      const email = document.getElementById("account-modal-email").value.trim().toLowerCase();
+      const token = document.getElementById("account-modal-code").value.trim().replace(/\s/g, "");
+      if (!/^\d{6,8}$/.test(token)) throw new Error("Entre le code reçu par e-mail.");
+      const type = accountSecurityFlow === "recovery" ? "recovery" : "reauthentication";
+      const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type });
+      if (error) throw error;
+      if (data?.session) authSession = data.session;
+      accountVerifiedForAction = true;
+
+      if (accountSecurityFlow === "delete") {
+        const confirmed = window.confirm("Dernière confirmation : supprimer définitivement ton compte Aluetoo ? Cette action est irréversible.");
+        if (!confirmed) return;
+        const response = await fetch(SUPABASE_URL + "/functions/v1/aluetoo-delete-account", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + (authSession?.access_token || ""),
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({})
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "La suppression du compte a échoué.");
+        localStorage.removeItem("alu_history_" + email);
+        await supabaseClient.auth.signOut({ scope: "local" });
+        alert("Ton compte Aluetoo a été supprimé.");
+        window.location.reload();
+        return;
+      }
+
+      document.getElementById("account-password-step").classList.remove("hidden");
+      document.getElementById("account-code-step").classList.add("hidden");
+      document.getElementById("account-modal-description").textContent = "Code vérifié. Choisis maintenant ton nouveau mot de passe.";
+    }
+
+    async function saveAccountNewPassword() {
+      if (!accountVerifiedForAction) throw new Error("Vérifie d’abord le code reçu par e-mail.");
+      const password = document.getElementById("account-new-password").value;
+      const confirmation = document.getElementById("account-confirm-password").value;
+      if (password.length < 8) throw new Error("Le mot de passe doit contenir au moins 8 caractères.");
+      if (password !== confirmation) throw new Error("Les deux mots de passe ne correspondent pas.");
+      const { error } = await supabaseClient.auth.updateUser({ password });
+      if (error) throw error;
+      document.getElementById("account-security-modal").classList.add("hidden");
+      alert("Ton mot de passe a été modifié avec succès.");
+    }
+
+    function wireAccountSecurity() {
+      const run = async (fn, button) => {
+        button.disabled = true;
+        try { await fn(); }
+        catch (error) { alert(error.message || "Une erreur est survenue."); }
+        finally { button.disabled = false; }
+      };
+      document.getElementById("forgot-password-btn").addEventListener("click", () => openAccountSecurityModal("recovery"));
+      document.getElementById("change-password-btn").addEventListener("click", () => openAccountSecurityModal("change-password"));
+      document.getElementById("delete-account-btn").addEventListener("click", () => openAccountSecurityModal("delete"));
+      document.getElementById("account-send-code-btn").addEventListener("click", (e) => run(sendAccountVerificationCode, e.currentTarget));
+      document.getElementById("account-verify-code-btn").addEventListener("click", (e) => run(verifyAccountSecurityCode, e.currentTarget));
+      document.getElementById("account-save-password-btn").addEventListener("click", (e) => run(saveAccountNewPassword, e.currentTarget));
+      document.getElementById("account-modal-cancel-btn").addEventListener("click", () => {
+        document.getElementById("account-security-modal").classList.add("hidden");
+      });
+    }
+
     function setupAuth() {
       const authForm = document.getElementById("auth-form");
       const firstnameField = document.getElementById("firstname-field");
       const authButton = document.getElementById("auth-submit-btn");
       let isSignUpMode = false;
+
+      wireAccountSecurity();
 
       document.getElementById("auth-lang-fr").addEventListener("click", () => applyLanguage("fr"));
       document.getElementById("auth-lang-pl").addEventListener("click", () => applyLanguage("pl"));
@@ -1741,6 +1889,7 @@
       }
 
       document.getElementById("settings-btn").addEventListener("click", () => {
+        document.getElementById("account-settings-email").textContent = currentUser?.email || "";
         document.getElementById("settings-screen").classList.add("open");
         sidebar.classList.remove("active");
         backdrop.classList.add("hidden");

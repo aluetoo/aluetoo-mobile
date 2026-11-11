@@ -1005,9 +1005,9 @@
         </div>
       </div>
       <div class="alu-activity">
-        <button class="alu-nav-item" id="activity-btn">
-          <span class="material-symbols-outlined">history</span>
-          <span id="txt-activity">Activité</span>
+        <button class="alu-nav-item" id="events-nav-btn" type="button">
+          <span class="material-symbols-outlined">event</span>
+          <span>Événements</span>
         </button>
       </div>
       <div class="alu-user-block">
@@ -1049,7 +1049,8 @@
         </div>
       </div>
       <div class="alu-conversation" id="conversation-container">
-        <section id="community-announcements" class="hidden" aria-label="Annonces communautaires" style="padding:76px 18px 0;max-width:850px;margin:0 auto;width:100%;"></section>
+        <section id="upcoming-events" class="hidden" aria-label="Événements programmés"></section>
+        <section id="community-announcements" class="hidden" aria-label="Annonces communautaires" style="padding:18px 18px 0;max-width:850px;margin:0 auto;width:100%;"></section>
         <div class="alu-welcome" id="welcome-screen">
           <h1 class="alu-welcome-title" id="welcome-text">Avez-vous de nouvelles idées ?</h1>
         </div>
@@ -1683,6 +1684,47 @@
       } catch(error) { console.error("Vérification du bannissement impossible:",error); }
     }
 
+    async function loadUpcomingEvents() {
+      const section = document.getElementById("upcoming-events");
+      if (!section) return;
+      try {
+        const now = new Date().toISOString();
+        const { data, error } = await supabaseClient.from("events")
+          .select("id,title,description,type,start_date,end_date")
+          .eq("is_active", true)
+          .gte("start_date", now)
+          .order("start_date", { ascending: true })
+          .limit(30);
+        if (error) throw error;
+        const events = data || [];
+        section.replaceChildren();
+        if (!events.length) { section.classList.add("hidden"); return; }
+        section.classList.remove("hidden");
+        const heading = document.createElement("h2");
+        heading.textContent = "Événements programmés";
+        heading.style.cssText = "font-size:17px;font-weight:650;margin:0 0 10px;color:var(--text);";
+        const list = document.createElement("div");
+        list.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;";
+        events.forEach(item => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = item.title || "Événement";
+          button.title = "Afficher les détails";
+          button.style.cssText = "display:block;width:100%;min-width:0;text-align:left;padding:12px 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
+          button.addEventListener("click", () => {
+            const date = new Date(item.start_date);
+            const dateLabel = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("fr-FR", { dateStyle:"full", timeStyle:"short" });
+            const details = [dateLabel, item.type ? "Type : " + item.type : "", item.description || "Aucun détail supplémentaire."].filter(Boolean).join("\n\n");
+            showAluetooPopup(item.title || "Événement", details, [{label:"Fermer",value:"close",primary:true}], "#a5b4fc");
+          });
+          list.appendChild(button);
+        });
+        section.append(heading, list);
+      } catch (error) {
+        console.error("Chargement des événements impossible:", error);
+      }
+    }
+
     async function loadCommunityAnnouncements() {
       try {
         const now = new Date().toISOString();
@@ -1739,7 +1781,7 @@
 
       applyLanguage(currentLang);
       loadSavedConversations();
-      loadBanStatus().then(() => loadCommunityAnnouncements()).then(() => loadBonusNotifications());
+      loadBanStatus().then(() => loadUpcomingEvents()).then(() => loadCommunityAnnouncements()).then(() => loadBonusNotifications());
       updateLimitCountersDisplay();
       checkGlobalLimits();
     }
@@ -1819,7 +1861,12 @@
         if (newLoc) document.getElementById("current-location").innerText = newLoc;
       });
 
-      document.getElementById("activity-btn").addEventListener("click", () => alert(t("activitySoon")));
+      document.getElementById("events-nav-btn").addEventListener("click", () => {
+        document.getElementById("alu-sidebar").classList.remove("active");
+        document.getElementById("sidebar-backdrop").classList.add("hidden");
+        const eventsSection = document.getElementById("upcoming-events");
+        if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
 
       const realFileInput = document.getElementById("real-file-input");
       const filePreview = document.getElementById("attached-file-preview");

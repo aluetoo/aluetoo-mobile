@@ -1404,32 +1404,45 @@
     }
 
     // ========== GOOGLE SIGN-IN ==========
-    function handleGoogleCredentialResponse(response) {
-      try {
-        const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        const email = payload.email.toLowerCase();
-        const firstname = payload.given_name || (payload.name ? payload.name.split(' ')[0] : "Utilisateur");
-
-        let savedUser = localStorage.getItem(`user_${email}`);
-        if (savedUser) {
-          currentUser = JSON.parse(savedUser);
-        } else {
-          currentUser = {
-            firstname: firstname,
-            email: email,
-            password: null,
-            authProvider: "google"
-          };
-          localStorage.setItem(`user_${email}`, JSON.stringify(currentUser));
-        }
-
-        localStorage.setItem("alu_session", JSON.stringify(currentUser));
-        startApp();
-      } catch (err) {
-        console.error("Erreur Google Sign-In :", err);
-        alert(t("googleError"));
-      }
+function handleGoogleCredentialResponse(response) {
+  try {
+    // Décodage 
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
     }
+
+    const payload = parseJwt(response.credential);
+    const email = payload.email.toLowerCase();
+    const firstname = payload.given_name || (payload.name ? payload.name.split(' ')[0] : "Utilisateur");
+
+    let savedUser = localStorage.getItem(`user_${email}`);
+    if (savedUser) {
+      currentUser = JSON.parse(savedUser);
+    } else {
+      currentUser = {
+        firstname: firstname,
+        email: email,
+        password: null,
+        authProvider: "google"
+      };
+      localStorage.setItem(`user_${email}`, JSON.stringify(currentUser));
+    }
+
+    localStorage.setItem("alu_session", JSON.stringify(currentUser));
+    startApp();
+  } catch (err) {
+    console.error("Erreur Google Sign-In :", err);
+    alert(t("googleError"));
+  }
+}
 
     function initGoogleSignIn() {
       if (typeof google === "undefined" || !google.accounts) {

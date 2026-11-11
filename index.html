@@ -1468,7 +1468,7 @@
       }
       if (result?.error) throw result.error;
       document.getElementById("account-code-step").classList.remove("hidden");
-      document.getElementById("account-send-code-btn").classList.add("hidden");
+      document.getElementById("account-send-code-btn").textContent = "Renvoyer le code";
       document.getElementById("account-modal-description").textContent =
         "Code envoyé si cette adresse correspond à un compte. Vérifie aussi tes courriers indésirables.";
     }
@@ -1482,6 +1482,7 @@
       if (error) throw error;
       if (data?.session) authSession = data.session;
       accountVerifiedForAction = true;
+      document.getElementById("account-send-code-btn").classList.add("hidden");
 
       if (accountSecurityFlow === "delete") {
         const confirmed = window.confirm("Dernière confirmation : supprimer définitivement ton compte Aluetoo ? Cette action est irréversible.");
@@ -1555,6 +1556,7 @@
         isSignUpMode = !isSignUpMode;
         if (isSignUpMode) firstnameField.classList.remove("hidden");
         else firstnameField.classList.add("hidden");
+        document.getElementById("forgot-password-btn").classList.toggle("hidden", isSignUpMode);
         applyLanguage(currentLang);
       });
 

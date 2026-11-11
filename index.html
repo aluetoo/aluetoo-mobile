@@ -1798,6 +1798,7 @@
               const counter = document.createElement("p");
               counter.style.cssText = "margin-top:10px;color:#fca5a5;font-weight:700;";
               contentDiv.appendChild(counter);
+              let banTimer = null;
               const updateBanCounter = () => {
                 const seconds = Math.max(0,Math.ceil((new Date(ban.ban_until).getTime()-Date.now())/1000));
                 counter.textContent = seconds > 0
@@ -1806,7 +1807,7 @@
                 if (seconds <= 0) clearInterval(banTimer);
               };
               updateBanCounter();
-              const banTimer = setInterval(updateBanCounter,1000);
+              banTimer = setInterval(updateBanCounter,1000);
             }
           } else {
             contentDiv.innerText = errorData.message ||

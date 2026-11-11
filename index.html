@@ -574,6 +574,47 @@
       min-width: 0;
       max-width: 92%;
     }
+    .alu-web-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin-top: 12px;
+    }
+    .alu-web-search-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 9px;
+      border: 1px solid rgba(138, 180, 248, 0.24);
+      border-radius: 999px;
+      background: rgba(138, 180, 248, 0.09);
+      color: #a9c7f5;
+      font-size: 0.72rem;
+      line-height: 1.2;
+      font-weight: 500;
+    }
+    .alu-source-chip {
+      display: inline-flex;
+      align-items: center;
+      max-width: 220px;
+      padding: 5px 9px;
+      border: 1px solid #353638;
+      border-radius: 999px;
+      background: #202123;
+      color: #c4c7c5 !important;
+      font-size: 0.72rem;
+      line-height: 1.2;
+      text-decoration: none !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 140ms ease, border-color 140ms ease;
+    }
+    .alu-source-chip:hover {
+      background: #2a2b2d;
+      border-color: #55585b;
+    }
     .alu-msg-content {
       font-size: 0.95rem;
       line-height: 1.65;
@@ -2184,6 +2225,8 @@
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
+        let webSearchUsed = false;
+        let responseSources = [];
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -2196,6 +2239,8 @@
             if (data === "[DONE]") continue;
             try {
               const json = JSON.parse(data);
+              if (json.webSearchUsed === true) webSearchUsed = true;
+              if (Array.isArray(json.sources)) responseSources = json.sources;
               const delta = json.choices?.[0]?.delta?.content;
               if (delta) {
                 fullReply += delta;
@@ -2205,7 +2250,13 @@
             } catch (_) {}
           }
         }
-        conversationHistory.push({ role: "assistant", content: fullReply });
+        const assistantMessage = {
+          role: "assistant",
+          content: fullReply,
+          ...(webSearchUsed ? { webSearchUsed: true, sources: responseSources } : {})
+        };
+        conversationHistory.push(assistantMessage);
+        appendAssistantWebMeta(aiBubble, assistantMessage);
         await saveConversationToGlobal(text, fullReply);
       } catch (err) {
         console.error("Aluetoo backend error:", err);
@@ -2221,7 +2272,7 @@
       return marked.parse(text);
     }
 
-    function appendMessageUI(sender, text) {
+    function appendMessageUI(sender, text, metadata = null) {
       const holder = document.getElementById("chat-messages");
       const wrapper = document.createElement("div");
       wrapper.className = `alu-msg alu-msg-${sender}`;
@@ -2238,7 +2289,38 @@
           </div>`;
       }
       holder.appendChild(wrapper);
+      if (sender === "assistant" && metadata) appendAssistantWebMeta(wrapper, metadata);
       return wrapper;
+    }
+
+    function appendAssistantWebMeta(wrapper, metadata) {
+      const sources = Array.isArray(metadata?.sources) ? metadata.sources : [];
+      if (!metadata?.webSearchUsed && !sources.length) return;
+      const body = wrapper.querySelector(".alu-msg-body");
+      if (!body) return;
+      const footer = document.createElement("div");
+      footer.className = "alu-web-meta";
+      if (metadata?.webSearchUsed) {
+        const label = document.createElement("span");
+        label.className = "alu-web-search-label";
+        label.textContent = "🌐 Recherche sur le Web";
+        footer.appendChild(label);
+      }
+      sources.slice(0, 8).forEach(source => {
+        if (!source || typeof source.url !== "string") return;
+        let parsed;
+        try { parsed = new URL(source.url); } catch (_) { return; }
+        if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return;
+        const chip = document.createElement("a");
+        chip.className = "alu-source-chip";
+        chip.href = parsed.href;
+        chip.target = "_blank";
+        chip.rel = "noopener noreferrer";
+        chip.textContent = String(source.title || source.domain || parsed.hostname).slice(0, 64);
+        chip.title = String(source.title || parsed.hostname);
+        footer.appendChild(chip);
+      });
+      body.appendChild(footer);
     }
 
     async function saveConversationToGlobal(userPrompt, aiReply) {
@@ -2363,7 +2445,7 @@
             currentActiveChatPinned = !!item.pinned;
             conversationHistory = messages;
             conversationHistory.forEach(msg => {
-              appendMessageUI(msg.role, msg.role === "assistant" ? formatAIResponse(msg.content) : msg.content);
+              appendMessageUI(msg.role, msg.role === "assistant" ? formatAIResponse(msg.content) : msg.content, msg.role === "assistant" ? msg : null);
             });
             const containerWrap = document.getElementById("conversation-container");
             containerWrap.scrollTop = containerWrap.scrollHeight;

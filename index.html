@@ -1541,7 +1541,7 @@
           .eq("is_active", true).order("priority",{ascending:false})
           .order("created_at",{ascending:false}).limit(10);
         if (error) throw error;
-        const hidden = new Set(JSON.parse(localStorage.getItem("alu_never_show_announcements") || "[]"));
+        const hidden = new Set(JSON.parse(localStorage.getItem("alu_never_show_announcements_" + currentUser.id) || "[]"));
         const visible = (data || []).filter(item => (!item.expires_at || item.expires_at > now) && !hidden.has(item.id));
         for (const item of visible) {
           const choice = await showAluetooPopup(item.title || "Annonce Aluetoo", item.content || "",
@@ -1549,7 +1549,7 @@
             "#a5b4fc");
           if (choice === "never") {
             hidden.add(item.id);
-            localStorage.setItem("alu_never_show_announcements",JSON.stringify([...hidden]));
+            localStorage.setItem("alu_never_show_announcements_" + currentUser.id,JSON.stringify([...hidden]));
           }
         }
       } catch (error) {

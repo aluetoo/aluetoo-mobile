@@ -581,6 +581,31 @@
       gap: 7px;
       margin-top: 12px;
     }
+    .alu-ai-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin: 2px 0 12px;
+      color: #a9c7f5;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      letter-spacing: 0.01em;
+    }
+    .alu-ai-status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      border-radius: 50%;
+      background: #8ab4f8;
+      box-shadow: 0 0 0 0 rgba(138, 180, 248, 0.45);
+      animation: alu-status-pulse 1.35s ease-out infinite;
+    }
+    @keyframes alu-status-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(138, 180, 248, 0.45); }
+      70% { box-shadow: 0 0 0 7px rgba(138, 180, 248, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(138, 180, 248, 0); }
+    }
     .alu-web-search-label {
       display: inline-flex;
       align-items: center;
@@ -2150,6 +2175,10 @@
       conversationHistory.push({ role: "user", content: text });
       const aiBubble = appendMessageUI("assistant", "");
       const contentDiv = aiBubble.querySelector(".alu-msg-content");
+      const statusDiv = document.createElement("div");
+      statusDiv.className = "alu-ai-status";
+      statusDiv.textContent = "Recherche sur le Web…";
+      contentDiv.parentElement.insertBefore(statusDiv, contentDiv);
       const container = document.getElementById("conversation-container");
       container.scrollTop = container.scrollHeight;
       let fullReply = "";
@@ -2227,6 +2256,7 @@
         let buffer = "";
         let webSearchUsed = false;
         let responseSources = [];
+        let streamError = "";
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -2239,10 +2269,14 @@
             if (data === "[DONE]") continue;
             try {
               const json = JSON.parse(data);
+              if (json.status === "searching") statusDiv.textContent = "Recherche sur le Web…";
+              if (json.status === "writing") statusDiv.textContent = json.webSearchUsed ? "Rédaction de la réponse…" : "Réflexion en cours…";
+              if (json.error) streamError = String(json.error);
               if (json.webSearchUsed === true) webSearchUsed = true;
               if (Array.isArray(json.sources)) responseSources = json.sources;
               const delta = json.choices?.[0]?.delta?.content;
               if (delta) {
+                statusDiv.remove();
                 fullReply += delta;
                 contentDiv.innerHTML = formatAIResponse(fullReply);
                 container.scrollTop = container.scrollHeight;
@@ -2250,6 +2284,9 @@
             } catch (_) {}
           }
         }
+        if (streamError) throw new Error(streamError);
+        statusDiv.remove();
+        if (!fullReply.trim()) throw new Error("Réponse IA vide.");
         const assistantMessage = {
           role: "assistant",
           content: fullReply,
@@ -2260,7 +2297,8 @@
         await saveConversationToGlobal(text, fullReply);
       } catch (err) {
         console.error("Aluetoo backend error:", err);
-        contentDiv.innerText = t("connectionError");
+        statusDiv.remove();
+        contentDiv.innerText = err?.message || t("connectionError");
         conversationHistory.pop();
       } finally {
         container.scrollTop = container.scrollHeight;
@@ -2305,6 +2343,12 @@
         label.className = "alu-web-search-label";
         label.textContent = "🌐 Recherche sur le Web";
         footer.appendChild(label);
+      }
+      if (sources.length) {
+        const sourcesLabel = document.createElement("span");
+        sourcesLabel.className = "alu-web-search-label";
+        sourcesLabel.textContent = "Sources";
+        footer.appendChild(sourcesLabel);
       }
       sources.slice(0, 8).forEach(source => {
         if (!source || typeof source.url !== "string") return;

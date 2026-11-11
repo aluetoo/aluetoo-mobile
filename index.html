@@ -1229,6 +1229,12 @@
         last: "Le dernier",
         noConversation: "Aucune conversation",
         activity: "Événements",
+        eventPopupTitle: "Événements",
+        eventEmpty: "Aucun événement pour le moment.",
+        eventLoadError: "Impossible de charger les événements. Réessaie dans un instant.",
+        eventStarts: "Commence le",
+        eventEnds: "Se termine le",
+        eventNoDetails: "Aucun détail supplémentaire.",
         locDesc: "En fonction de votre lieu de résidence",
         updateLocation: "Mettre à jour l'emplacement",
         settingsTitle: "Paramètres",
@@ -1275,6 +1281,12 @@
         last: "Ostatnie",
         noConversation: "Brak rozmów",
         activity: "Wydarzenia",
+        eventPopupTitle: "Wydarzenia",
+        eventEmpty: "Obecnie brak wydarzeń.",
+        eventLoadError: "Nie można załadować wydarzeń. Spróbuj ponownie za chwilę.",
+        eventStarts: "Rozpoczyna się",
+        eventEnds: "Kończy się",
+        eventNoDetails: "Brak dodatkowych informacji.",
         locDesc: "Na podstawie Twojej lokalizacji",
         updateLocation: "Zaktualizuj lokalizację",
         settingsTitle: "Ustawienia",
@@ -1709,7 +1721,7 @@
         await showEventsListPopup(data || []);
       } catch (error) {
         console.error("Chargement des événements impossible:", error);
-        await showAluetooPopup("Événements", "Impossible de charger les événements. Réessaie dans un instant.", [{label:"Fermer",value:"close",primary:true}]);
+        await showAluetooPopup(t("eventPopupTitle"), t("eventLoadError"), [{label:t("close"),value:"close",primary:true}]);
       }
     }
 
@@ -1730,23 +1742,28 @@
         const finish=()=>{panel.style.animation="aluPopupOut .16s ease both";overlay.style.transition="opacity .16s ease";overlay.style.opacity="0";setTimeout(()=>{overlay.remove();resolve();},160);};
         close.addEventListener("click",finish);
         overlay.addEventListener("click",e=>{if(e.target===overlay)finish();});
+        const dateLocale=currentLang==="pl"?"pl-PL":"fr-FR";
+        const start=item.start_date?new Date(item.start_date):null;
         const end=item.end_date?new Date(item.end_date):null;
-        const endTime=end&&!Number.isNaN(end.getTime())?end.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"";
-        const time=document.createElement("div");
-        time.textContent=endTime;
-        time.style.cssText="font-size:22px;font-weight:750;letter-spacing:.02em;color:#a5b4fc;margin:2px 42px 10px 0;min-height:27px;";
+        const formatDate=value=>value&&!Number.isNaN(value.getTime())?value.toLocaleString(dateLocale,{dateStyle:"full",timeStyle:"short"}):"";
+        const startLabel=document.createElement("div");
+        startLabel.textContent=start&&!Number.isNaN(start.getTime())?t("eventStarts")+" : "+formatDate(start):"";
+        startLabel.style.cssText="font-size:15px;font-weight:650;line-height:1.5;color:#a5b4fc;margin:2px 42px 6px 0;";
+        const endLabel=document.createElement("div");
+        endLabel.textContent=end&&!Number.isNaN(end.getTime())?t("eventEnds")+" : "+formatDate(end):"";
+        endLabel.style.cssText="font-size:14px;font-weight:600;line-height:1.5;color:#a5b4fc;margin:0 42px 12px 0;";
         const title=document.createElement("h2");
-        title.textContent=item.title||"Événement";
+        title.textContent=item.title||t("eventPopupTitle");
         title.style.cssText="font-size:20px;font-weight:700;margin:0 42px 14px 0;color:#a5b4fc;overflow-wrap:anywhere;";
         const description=document.createElement("p");
-        const cleanDescription=(item.description||"Aucun détail supplémentaire.").replace(/\\\\n/g," ").replace(/\\n/g," ").replace(/\s+/g," ").trim();
+        const cleanDescription=(item.description||t("eventNoDetails")).replace(/\\\\n/g," ").replace(/\\n/g," ").replace(/\s+/g," ").trim();
         description.textContent=cleanDescription;
         description.style.cssText="white-space:pre-wrap;line-height:1.6;color:#d7deea;font-size:15px;margin:0 0 22px;overflow-wrap:anywhere;";
         const actions=document.createElement("div");actions.style.cssText="display:flex;flex-direction:column;gap:9px;";
-        const button=document.createElement("button");button.type="button";button.textContent="Fermer";
+        const button=document.createElement("button");button.type="button";button.textContent=t("close");
         button.style.cssText="width:100%;padding:11px 16px;border:1px solid #59698a;border-radius:12px;background:#303b4c;color:#fff;font-weight:600;cursor:pointer;";
         button.addEventListener("click",finish);actions.appendChild(button);
-        panel.append(close,time,title,description,actions);overlay.appendChild(panel);document.body.appendChild(overlay);
+        panel.append(close,startLabel,endLabel,title,description,actions);overlay.appendChild(panel);document.body.appendChild(overlay);
       });
     }
 
@@ -1764,14 +1781,14 @@
         panel.style.cssText="width:min(440px,100%);max-height:82vh;overflow:auto;background:#1d2430;border:1px solid #3c4a60;border-radius:24px;padding:24px;color:#f4f6fb;box-shadow:0 24px 90px rgba(0,0,0,.5);position:relative;animation:aluPopupIn .24s cubic-bezier(.2,.8,.2,1) both;";
         const close=document.createElement("button");close.type="button";close.textContent="×";close.setAttribute("aria-label","Fermer");
         close.style.cssText="position:absolute;right:14px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:#303b4c;color:#fff;font-size:25px;cursor:pointer;";
-        const title=document.createElement("h2");title.textContent="Événements";title.style.cssText="font-size:20px;font-weight:700;margin:4px 42px 16px 0;color:#a5b4fc;";
+        const title=document.createElement("h2");title.textContent=t("eventPopupTitle");title.style.cssText="font-size:20px;font-weight:700;margin:4px 42px 16px 0;color:#a5b4fc;";
         const list=document.createElement("div");list.style.cssText="display:flex;flex-direction:column;gap:9px;";
         let closing=false;
         const finish=()=>{if(closing)return;closing=true;panel.style.animation="aluPopupOut .16s ease both";overlay.style.transition="opacity .16s ease";overlay.style.opacity="0";setTimeout(()=>{overlay.remove();resolve();},160);};
         close.addEventListener("click",finish);
         overlay.addEventListener("click",e=>{if(e.target===overlay)finish();});
         if(!events.length){
-          const empty=document.createElement("p");empty.textContent="Aucun événement pour le moment.";
+          const empty=document.createElement("p");empty.textContent=t("eventEmpty");
           empty.style.cssText="padding:12px 0;color:#d7deea;font-size:14px;line-height:1.6;";
           list.appendChild(empty);
         } else {

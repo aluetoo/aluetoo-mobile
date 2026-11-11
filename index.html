@@ -1700,25 +1700,54 @@
 
     async function loadUpcomingEvents() {
       try {
-        const now = new Date();
         const { data, error } = await supabaseClient.from("events")
           .select("id,title,description,type,start_date,end_date,is_active")
           .eq("is_active", true)
           .order("start_date", { ascending: true, nullsFirst: false })
           .limit(100);
         if (error) throw error;
-        const events = (data || []).filter(item => {
-          const end = item.end_date ? new Date(item.end_date) : null;
-          const start = item.start_date ? new Date(item.start_date) : null;
-          if (end && !Number.isNaN(end.getTime())) return end >= now;
-          if (start && !Number.isNaN(start.getTime())) return start >= now;
-          return !start && !end;
-        });
-        await showEventsListPopup(events);
+        await showEventsListPopup(data || []);
       } catch (error) {
         console.error("Chargement des événements impossible:", error);
         await showAluetooPopup("Événements", "Impossible de charger les événements. Réessaie dans un instant.", [{label:"Fermer",value:"close",primary:true}]);
       }
+    }
+
+    function showEventDetailsPopup(item) {
+      if (!document.getElementById("alu-popup-motion")) {
+        const motion = document.createElement("style");
+        motion.id = "alu-popup-motion";
+        motion.textContent = "@keyframes aluPopupIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes aluPopupOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(8px) scale(.97)}}@keyframes aluOverlayIn{from{opacity:0}to{opacity:1}}";
+        document.head.appendChild(motion);
+      }
+      return new Promise(resolve => {
+        const overlay=document.createElement("div");
+        overlay.style.cssText="position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.76);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);animation:aluOverlayIn .2s ease both;";
+        const panel=document.createElement("section");
+        panel.style.cssText="width:min(440px,100%);max-height:82vh;overflow:auto;background:#1d2430;border:1px solid #3c4a60;border-radius:24px;padding:24px;color:#f4f6fb;box-shadow:0 24px 90px rgba(0,0,0,.5);position:relative;animation:aluPopupIn .24s cubic-bezier(.2,.8,.2,1) both;";
+        const close=document.createElement("button");close.type="button";close.textContent="×";close.setAttribute("aria-label","Fermer");
+        close.style.cssText="position:absolute;right:14px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:#303b4c;color:#fff;font-size:25px;cursor:pointer;";
+        const finish=()=>{panel.style.animation="aluPopupOut .16s ease both";overlay.style.transition="opacity .16s ease";overlay.style.opacity="0";setTimeout(()=>{overlay.remove();resolve();},160);};
+        close.addEventListener("click",finish);
+        overlay.addEventListener("click",e=>{if(e.target===overlay)finish();});
+        const end=item.end_date?new Date(item.end_date):null;
+        const endTime=end&&!Number.isNaN(end.getTime())?end.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"";
+        const time=document.createElement("div");
+        time.textContent=endTime;
+        time.style.cssText="font-size:22px;font-weight:750;letter-spacing:.02em;color:#a5b4fc;margin:2px 42px 10px 0;min-height:27px;";
+        const title=document.createElement("h2");
+        title.textContent=item.title||"Événement";
+        title.style.cssText="font-size:20px;font-weight:700;margin:0 42px 14px 0;color:#a5b4fc;overflow-wrap:anywhere;";
+        const description=document.createElement("p");
+        const cleanDescription=(item.description||"Aucun détail supplémentaire.").replace(/\\\\n/g," ").replace(/\\n/g," ").replace(/\s+/g," ").trim();
+        description.textContent=cleanDescription;
+        description.style.cssText="white-space:pre-wrap;line-height:1.6;color:#d7deea;font-size:15px;margin:0 0 22px;overflow-wrap:anywhere;";
+        const actions=document.createElement("div");actions.style.cssText="display:flex;flex-direction:column;gap:9px;";
+        const button=document.createElement("button");button.type="button";button.textContent="Fermer";
+        button.style.cssText="width:100%;padding:11px 16px;border:1px solid #59698a;border-radius:12px;background:#303b4c;color:#fff;font-weight:600;cursor:pointer;";
+        button.addEventListener("click",finish);actions.appendChild(button);
+        panel.append(close,time,title,description,actions);overlay.appendChild(panel);document.body.appendChild(overlay);
+      });
     }
 
     async function showEventsListPopup(events) {
@@ -1742,7 +1771,7 @@
         close.addEventListener("click",finish);
         overlay.addEventListener("click",e=>{if(e.target===overlay)finish();});
         if(!events.length){
-          const empty=document.createElement("p");empty.textContent="Aucun événement programmé pour le moment.";
+          const empty=document.createElement("p");empty.textContent="Aucun événement pour le moment.";
           empty.style.cssText="padding:12px 0;color:#d7deea;font-size:14px;line-height:1.6;";
           list.appendChild(empty);
         } else {
@@ -1754,15 +1783,7 @@
             button.append(name,arrow);
             button.addEventListener("mouseenter",()=>{button.style.background="#354258";button.style.borderColor="#7182bd";});
             button.addEventListener("mouseleave",()=>{button.style.background="#2b3545";button.style.borderColor="#3c4a60";});
-            button.addEventListener("click",async()=>{
-              finish();
-              const start=item.start_date?new Date(item.start_date):null;
-              const end=item.end_date?new Date(item.end_date):null;
-              const startLabel=start&&!Number.isNaN(start.getTime())?"Début : "+start.toLocaleString("fr-FR",{dateStyle:"full",timeStyle:"short"}):"";
-              const endLabel=end&&!Number.isNaN(end.getTime())?"Fin : "+end.toLocaleString("fr-FR",{dateStyle:"full",timeStyle:"short"}):"";
-              const details=[startLabel,endLabel,item.type?"Type : "+item.type:"",item.description||"Aucun détail supplémentaire."].filter(Boolean).join("\\n\\n");
-              setTimeout(()=>showAluetooPopup(item.title||"Événement",details,[{label:"Fermer",value:"close",primary:true}],"#a5b4fc"),170);
-            });
+            button.addEventListener("click",()=>{finish();setTimeout(()=>showEventDetailsPopup(item),170);});
             list.appendChild(button);
           });
         }
@@ -1840,7 +1861,7 @@
 
       applyLanguage(currentLang);
       loadSavedConversations().then(() => setupConversationsRealtime());
-      loadBanStatus().then(() => loadUpcomingEvents()).then(() => loadCommunityAnnouncements()).then(() => loadBonusNotifications());
+      loadBanStatus().then(() => loadCommunityAnnouncements()).then(() => loadBonusNotifications());
       updateLimitCountersDisplay();
       checkGlobalLimits();
     }

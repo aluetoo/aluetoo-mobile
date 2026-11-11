@@ -509,8 +509,30 @@
       font-size: clamp(1.6rem, 6vw, 2.8rem);
       font-weight: 400;
       letter-spacing: -0.02em;
-      color: #e3e3e3;
+      color: var(--accent);
       text-align: center;
+      opacity: 0;
+      animation: welcomeAppear 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+    }
+    @keyframes welcomeAppear {
+      0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.97);
+        text-shadow: 0 0 0 transparent;
+        filter: blur(6px);
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        text-shadow: 0 0 28px color-mix(in srgb, var(--accent) 45%, transparent),
+                     0 0 60px color-mix(in srgb, var(--accent) 20%, transparent);
+        filter: blur(0);
+      }
     }
     .alu-messages {
       width: min(820px, 100%);
@@ -571,7 +593,6 @@
     .alu-msg-user .alu-msg-content {
       white-space: pre-wrap;
     }
-    /* Titres */
     .alu-msg-content h1,
     .alu-msg-content h2,
     .alu-msg-content h3,
@@ -591,14 +612,12 @@
     .alu-msg-content h3:first-child {
       margin-top: 0;
     }
-    /* Paragraphes */
     .alu-msg-content p {
       margin-bottom: 0.9rem;
     }
     .alu-msg-content p:last-child {
       margin-bottom: 0;
     }
-    /* Listes */
     .alu-msg-content ul,
     .alu-msg-content ol {
       margin: 0.8rem 0 1rem 1.5rem;
@@ -613,7 +632,6 @@
     .alu-msg-content li::marker {
       color: var(--accent);
     }
-    /* Code inline */
     .alu-msg-content code {
       font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
       background-color: #2a2b2d;
@@ -622,7 +640,6 @@
       font-size: 0.86rem;
       color: #f2f2f2;
     }
-    /* Blocs de code */
     .alu-msg-content pre {
       margin: 1rem 0;
       padding: 14px 16px;
@@ -640,7 +657,6 @@
       display: block;
       white-space: pre;
     }
-    /* Tableaux */
     .alu-msg-content table {
       width: 100%;
       border-collapse: collapse;
@@ -668,7 +684,6 @@
     .alu-msg-content tr:hover {
       background-color: #252628;
     }
-    /* Citations */
     .alu-msg-content blockquote {
       margin: 1rem 0;
       padding: 10px 16px;
@@ -681,7 +696,6 @@
     .alu-msg-content blockquote p {
       margin: 0;
     }
-    /* Liens */
     .alu-msg-content a {
       color: var(--accent);
       text-decoration: none;
@@ -691,20 +705,17 @@
     .alu-msg-content a:hover {
       border-bottom-color: var(--accent);
     }
-    /* Images */
     .alu-msg-content img {
       max-width: 100%;
       border-radius: 12px;
       margin: 1rem 0;
       border: 1px solid #303133;
     }
-    /* Séparateurs */
     .alu-msg-content hr {
       border: none;
       border-top: 1px solid #303133;
       margin: 1.5rem 0;
     }
-    /* Gras / Italique */
     .alu-msg-content strong {
       color: #ffffff;
       font-weight: 600;
@@ -843,7 +854,6 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    /* Language selector on auth */
     .auth-lang-bar {
       position: absolute;
       top: 16px;
@@ -931,7 +941,6 @@
 <body class="bg-[#131314] text-[#e3e3e3]">
   <!-- AUTH -->
   <div id="auth-screen" class="fixed inset-0 bg-[#131314] z-50 flex items-center justify-center p-4">
-    <!-- Language selector at the top -->
     <div class="auth-lang-bar">
       <button class="auth-lang-btn active" data-lang="fr" id="auth-lang-fr">FR</button>
       <button class="auth-lang-btn" data-lang="pl" id="auth-lang-pl">PL</button>
@@ -959,7 +968,6 @@
         </button>
       </form>
 
-      <!-- Bouton Google -->
       <div class="mt-5 flex flex-col items-center gap-3">
         <div class="w-full flex items-center gap-3 text-xs text-[#9aa0a6]">
           <div class="flex-1 h-px bg-[#303133]"></div>
@@ -975,6 +983,7 @@
       </div>
     </div>
   </div>
+
   <!-- APP -->
   <div class="alu-app hidden" id="app-container">
     <aside class="alu-sidebar" id="alu-sidebar">
@@ -1100,7 +1109,8 @@
       </div>
     </main>
   </div>
-  <!-- ========== ÉCRAN PARAMÈTRES PLEIN ÉCRAN ========== -->
+
+  <!-- PARAMÈTRES -->
   <div id="settings-screen">
     <div class="settings-header">
       <button class="settings-back-btn" id="settings-back-btn">
@@ -1109,16 +1119,11 @@
       <h2 class="settings-title" id="txt-settings-title">Paramètres</h2>
     </div>
     <div class="settings-content">
-      <!-- Language section -->
       <div class="settings-section">
         <p class="settings-section-title" id="txt-lang-section">Langue</p>
         <div class="alu-lang-grid">
-          <button class="alu-lang-btn active" data-lang="fr" id="settings-lang-fr">
-            Français
-          </button>
-          <button class="alu-lang-btn" data-lang="pl" id="settings-lang-pl">
-            Polski
-          </button>
+          <button class="alu-lang-btn active" data-lang="fr" id="settings-lang-fr">Français</button>
+          <button class="alu-lang-btn" data-lang="pl" id="settings-lang-pl">Polski</button>
         </div>
       </div>
       <div class="settings-section">
@@ -1136,29 +1141,26 @@
       </div>
     </div>
   </div>
+
   <!-- BONUS MODAL -->
   <div id="bonus-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#1e1f20] border border-[#303133] p-6 rounded-2xl w-full max-w-sm shadow-2xl text-center">
       <h3 class="text-lg font-medium mb-2 text-white" id="txt-bonus-title">Message Bonus Quotidien</h3>
       <p class="text-xs text-[#9aa0a6] mb-4" id="txt-bonus-desc">Voici le code secret d'aujourd'hui. Entrez-le ci-dessous pour obtenir +1 message bonus sur Aluetoo Fast Lite !</p>
-      
-      <div class="bg-[#131314] border border-[#303133] rounded-xl py-3 px-4 mb-4 font-mono text-xl tracking-widest font-bold select-all" id="daily-code-display" style="color: var(--accent);">
-        ...
-      </div>
-      
+      <div class="bg-[#131314] border border-[#303133] rounded-xl py-3 px-4 mb-4 font-mono text-xl tracking-widest font-bold select-all" id="daily-code-display" style="color: var(--accent);">...</div>
       <input type="text" id="bonus-code-input" class="w-full bg-[#131314] border border-[#303133] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent)] text-white mb-4 text-center uppercase font-mono" placeholder="Recopiez le code ici">
-      
       <div class="flex justify-end gap-2 w-full">
-        <button id="close-bonus-modal" class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition" id="txt-close">Fermer</button>
-        <button id="submit-bonus-btn" class="rounded-xl px-4 py-2 text-sm font-medium transition" style="background: var(--accent-strong); color: #0d0e0f;" id="txt-activate-bonus">Activer mon bonus</button>
+        <button id="close-bonus-modal" class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition">Fermer</button>
+        <button id="submit-bonus-btn" class="rounded-xl px-4 py-2 text-sm font-medium transition" style="background: var(--accent-strong); color: #0d0e0f;">Activer mon bonus</button>
       </div>
     </div>
   </div>
+
   <script>
     const GROQ_API_KEY = "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";
     
-    // ⚠️
-    const GOOGLE_CLIENT_ID = "619367591618-qa36e2ibh8e3f0gv0eknkhhfro4a6g9n.apps.googleusercontent.com";
+    // ⚠️ Remplacez par votre vrai Client ID Google
+    const GOOGLE_CLIENT_ID = "VOTRE_CLIENT_ID.apps.googleusercontent.com";
 
     const modelsConfig = {
       "fast-lite": { name: "Aluetoo Fast Lite", apiName: "openai/gpt-oss-20b", limit: 20, pill: "Fast Lite" },
@@ -1172,10 +1174,8 @@
     let currentActiveChatId = null;
     let currentLang = localStorage.getItem("alu_lang") || "fr";
 
-    // ========== TRANSLATIONS ==========
     const translations = {
       fr: {
-        // Auth
         authTitleLogin: "Connexion à Aluetoo",
         authTitleSignup: "Créer un compte Aluetoo",
         labelFirstname: "Prénom",
@@ -1190,7 +1190,6 @@
         toggleBtnCreate: "Créer un compte",
         toggleBtnLogin: "Se connecter",
         or: "ou",
-        // Sidebar
         newChat: "Nouvelle conversation",
         searchHistory: "Rechercher une discussion...",
         modeCode: "Mode Code",
@@ -1200,24 +1199,18 @@
         locDesc: "En fonction de votre lieu de résidence",
         updateLocation: "Mettre à jour l'emplacement",
         settingsTitle: "Paramètres",
-        // Top
         upgrade: "Passez à une formule supérieure",
-        // Welcome
         welcome: "Avez-vous de nouvelles idées ?",
         welcomeWithName: "Avez-vous de nouvelles idées {name} ?",
-        // Composer
         askAluetoo: "Demandez à Aluetoo",
         limitReached: "Limite de messages atteinte. Changez de modèle.",
-        // Settings
         langSection: "Langue",
         accentSection: "Couleur d'accentuation",
-        // Bonus
         bonusTitle: "Message Bonus Quotidien",
         bonusDesc: "Voici le code secret d'aujourd'hui. Entrez-le ci-dessous pour obtenir +1 message bonus sur Aluetoo Fast Lite !",
         bonusPlaceholder: "Recopiez le code ici",
         close: "Fermer",
         activateBonus: "Activer mon bonus",
-        // Alerts
         wrongPassword: "Mot de passe incorrect.",
         activitySoon: "Activité bientôt disponible !",
         wrongCode: "Code incorrect.",
@@ -1229,7 +1222,6 @@
         googleError: "Erreur lors de la connexion Google."
       },
       pl: {
-        // Auth
         authTitleLogin: "Logowanie do Aluetoo",
         authTitleSignup: "Utwórz konto Aluetoo",
         labelFirstname: "Imię",
@@ -1244,7 +1236,6 @@
         toggleBtnCreate: "Utwórz konto",
         toggleBtnLogin: "Zaloguj się",
         or: "lub",
-        // Sidebar
         newChat: "Nowa rozmowa",
         searchHistory: "Szukaj rozmowy...",
         modeCode: "Tryb kodu",
@@ -1254,24 +1245,18 @@
         locDesc: "Na podstawie Twojej lokalizacji",
         updateLocation: "Zaktualizuj lokalizację",
         settingsTitle: "Ustawienia",
-        // Top
         upgrade: "Przejdź na wyższy plan",
-        // Welcome
         welcome: "Masz nowe pomysły?",
         welcomeWithName: "Masz nowe pomysły {name}?",
-        // Composer
         askAluetoo: "Zapytaj Aluetoo",
         limitReached: "Osiągnięto limit wiadomości. Zmień model.",
-        // Settings
         langSection: "Język",
         accentSection: "Kolor akcentu",
-        // Bonus
         bonusTitle: "Codzienny bonus wiadomości",
         bonusDesc: "Oto dzisiejszy tajny kod. Wpisz go poniżej, aby otrzymać +1 wiadomość bonusową na Aluetoo Fast Lite!",
         bonusPlaceholder: "Wpisz kod tutaj",
         close: "Zamknij",
         activateBonus: "Aktywuj bonus",
-        // Alerts
         wrongPassword: "Nieprawidłowe hasło.",
         activitySoon: "Aktywność wkrótce dostępna!",
         wrongCode: "Nieprawidłowy kod.",
@@ -1293,7 +1278,6 @@
       localStorage.setItem("alu_lang", lang);
       document.documentElement.lang = lang;
 
-      // Auth screen
       const isSignUp = !document.getElementById("firstname-field").classList.contains("hidden");
       document.getElementById("auth-title").innerText = isSignUp ? t("authTitleSignup") : t("authTitleLogin");
       document.getElementById("label-firstname").innerText = t("labelFirstname");
@@ -1306,15 +1290,11 @@
       document.getElementById("auth-toggle-btn").innerText = isSignUp ? t("toggleBtnLogin") : t("toggleBtnCreate");
       document.getElementById("txt-or").innerText = t("or");
 
-      // Auth lang buttons
       document.getElementById("auth-lang-fr").classList.toggle("active", lang === "fr");
       document.getElementById("auth-lang-pl").classList.toggle("active", lang === "pl");
-
-      // Settings lang buttons
       document.getElementById("settings-lang-fr").classList.toggle("active", lang === "fr");
       document.getElementById("settings-lang-pl").classList.toggle("active", lang === "pl");
 
-      // Sidebar & main
       document.getElementById("txt-new-chat").innerText = t("newChat");
       document.getElementById("search-history").placeholder = t("searchHistory");
       document.getElementById("txt-mode-code").innerText = t("modeCode");
@@ -1329,27 +1309,21 @@
       document.getElementById("txt-lang-section").innerText = t("langSection");
       document.getElementById("txt-accent-section").innerText = t("accentSection");
 
-      // Welcome
       if (currentUser) {
         document.getElementById("welcome-text").innerText = t("welcomeWithName").replace("{name}", currentUser.firstname.toUpperCase());
       } else {
         document.getElementById("welcome-text").innerText = t("welcome");
       }
 
-      // Composer
       const input = document.getElementById("chat-input");
-      if (!input.disabled) {
-        input.placeholder = t("askAluetoo");
-      }
+      if (!input.disabled) input.placeholder = t("askAluetoo");
 
-      // Bonus modal
       document.getElementById("txt-bonus-title").innerText = t("bonusTitle");
       document.getElementById("txt-bonus-desc").innerText = t("bonusDesc");
       document.getElementById("bonus-code-input").placeholder = t("bonusPlaceholder");
       document.getElementById("close-bonus-modal").innerText = t("close");
       document.getElementById("submit-bonus-btn").innerText = t("activateBonus");
 
-      // Titles of settings buttons
       document.getElementById("settings-btn").title = t("settingsTitle");
       document.getElementById("logout-btn").title = currentLang === "pl" ? "Wyloguj się" : "Se déconnecter";
     }
@@ -1404,59 +1378,59 @@
     }
 
     // ========== GOOGLE SIGN-IN ==========
-function handleGoogleCredentialResponse(response) {
-  try {
-    // Décodage 
-    function parseJwt(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      return JSON.parse(jsonPayload);
+    function handleGoogleCredentialResponse(response) {
+      try {
+        function parseJwt(token) {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split('')
+              .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join('')
+          );
+          return JSON.parse(jsonPayload);
+        }
+
+        const payload = parseJwt(response.credential);
+        const email = payload.email.toLowerCase();
+        const firstname = payload.given_name || (payload.name ? payload.name.split(' ')[0] : "Utilisateur");
+        const picture = payload.picture || null;
+
+        let savedUser = localStorage.getItem(`user_${email}`);
+        if (savedUser) {
+          currentUser = JSON.parse(savedUser);
+          if (picture) currentUser.picture = picture;
+        } else {
+          currentUser = {
+            firstname: firstname,
+            email: email,
+            password: null,
+            authProvider: "google",
+            picture: picture
+          };
+          localStorage.setItem(`user_${email}`, JSON.stringify(currentUser));
+        }
+
+        localStorage.setItem("alu_session", JSON.stringify(currentUser));
+        startApp();
+      } catch (err) {
+        console.error("Erreur Google Sign-In :", err);
+        alert(t("googleError"));
+      }
     }
-
-    const payload = parseJwt(response.credential);
-    const email = payload.email.toLowerCase();
-    const firstname = payload.given_name || (payload.name ? payload.name.split(' ')[0] : "Utilisateur");
-
-    let savedUser = localStorage.getItem(`user_${email}`);
-    if (savedUser) {
-      currentUser = JSON.parse(savedUser);
-    } else {
-      currentUser = {
-        firstname: firstname,
-        email: email,
-        password: null,
-        authProvider: "google"
-      };
-      localStorage.setItem(`user_${email}`, JSON.stringify(currentUser));
-    }
-
-    localStorage.setItem("alu_session", JSON.stringify(currentUser));
-    startApp();
-  } catch (err) {
-    console.error("Erreur Google Sign-In :", err);
-    alert(t("googleError"));
-  }
-}
 
     function initGoogleSignIn() {
       if (typeof google === "undefined" || !google.accounts) {
         setTimeout(initGoogleSignIn, 400);
         return;
       }
-
       google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
         auto_select: false,
         cancel_on_tap_outside: true
       });
-
       google.accounts.id.renderButton(
         document.getElementById("google-btn-container"),
         {
@@ -1476,18 +1450,14 @@ function handleGoogleCredentialResponse(response) {
       const firstnameField = document.getElementById("firstname-field");
       let isSignUpMode = false;
 
-      // Language buttons on auth
       document.getElementById("auth-lang-fr").addEventListener("click", () => applyLanguage("fr"));
       document.getElementById("auth-lang-pl").addEventListener("click", () => applyLanguage("pl"));
 
       document.getElementById("auth-toggle-btn").addEventListener("click", (e) => {
         e.preventDefault();
         isSignUpMode = !isSignUpMode;
-        if (isSignUpMode) {
-          firstnameField.classList.remove("hidden");
-        } else {
-          firstnameField.classList.add("hidden");
-        }
+        if (isSignUpMode) firstnameField.classList.remove("hidden");
+        else firstnameField.classList.add("hidden");
         applyLanguage(currentLang);
       });
 
@@ -1503,9 +1473,8 @@ function handleGoogleCredentialResponse(response) {
           const savedUser = localStorage.getItem(`user_${email}`);
           if (savedUser) {
             const parsed = JSON.parse(savedUser);
-            if (parsed.password === password) {
-              currentUser = parsed;
-            } else {
+            if (parsed.password === password) currentUser = parsed;
+            else {
               alert(t("wrongPassword"));
               return;
             }
@@ -1523,8 +1492,6 @@ function handleGoogleCredentialResponse(response) {
         currentUser = JSON.parse(activeSession);
         startApp();
       }
-
-      // Initialisation du bouton Google
       initGoogleSignIn();
     }
 
@@ -1532,7 +1499,15 @@ function handleGoogleCredentialResponse(response) {
       document.getElementById("auth-screen").classList.add("hidden");
       document.getElementById("app-container").classList.remove("hidden");
       document.getElementById("user-display-name").innerText = currentUser.firstname;
-      document.getElementById("user-avatar").innerText = currentUser.firstname.substring(0, 2).toUpperCase();
+
+      // Avatar : photo Google ou initiales
+      const avatarEl = document.getElementById("user-avatar");
+      if (currentUser.picture) {
+        avatarEl.innerHTML = `<img src="${currentUser.picture}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:999px;">`;
+      } else {
+        avatarEl.innerText = currentUser.firstname.substring(0, 2).toUpperCase();
+      }
+
       applyLanguage(currentLang);
       loadSavedConversations();
       updateLimitCountersDisplay();
@@ -1551,6 +1526,7 @@ function handleGoogleCredentialResponse(response) {
       const modelDropdownBottom = document.getElementById("model-dropdown-bottom");
       const input = document.getElementById("chat-input");
       const sendBtn = document.getElementById("send-btn");
+
       modelToggleBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         modelDropdownBottom.classList.toggle("show");
@@ -1561,6 +1537,7 @@ function handleGoogleCredentialResponse(response) {
           modelDropdownBottom.classList.remove("show");
         });
       });
+
       const sidebar = document.getElementById("alu-sidebar");
       const sidebarToggle = document.getElementById("mobile-sidebar-toggle");
       const backdrop = document.getElementById("sidebar-backdrop");
@@ -1575,6 +1552,7 @@ function handleGoogleCredentialResponse(response) {
         sidebar.classList.remove("active");
         backdrop.classList.add("hidden");
       });
+
       input.addEventListener("input", () => {
         input.style.height = "auto";
         input.style.height = Math.min(input.scrollHeight, 150) + "px";
@@ -1587,6 +1565,7 @@ function handleGoogleCredentialResponse(response) {
         }
       });
       sendBtn.addEventListener("click", handleSendMessage);
+
       document.getElementById("new-chat-btn").addEventListener("click", () => {
         document.getElementById("chat-messages").innerHTML = "";
         conversationHistory = [];
@@ -1596,22 +1575,23 @@ function handleGoogleCredentialResponse(response) {
         sidebar.classList.remove("active");
         backdrop.classList.add("hidden");
       });
+
       document.getElementById("logout-btn").addEventListener("click", () => {
         localStorage.removeItem("alu_session");
         window.location.reload();
       });
+
       window.addEventListener("click", (e) => {
-        if (!modelToggleBtn.contains(e.target)) {
-          modelDropdownBottom.classList.remove("show");
-        }
+        if (!modelToggleBtn.contains(e.target)) modelDropdownBottom.classList.remove("show");
       });
+
       document.getElementById("update-location-btn").addEventListener("click", () => {
         const newLoc = prompt(t("enterLocation"));
         if (newLoc) document.getElementById("current-location").innerText = newLoc;
       });
-      document.getElementById("activity-btn").addEventListener("click", () => {
-        alert(t("activitySoon"));
-      });
+
+      document.getElementById("activity-btn").addEventListener("click", () => alert(t("activitySoon")));
+
       const realFileInput = document.getElementById("real-file-input");
       const filePreview = document.getElementById("attached-file-preview");
       const fileNameSpan = document.getElementById("attached-file-name");
@@ -1635,12 +1615,14 @@ function handleGoogleCredentialResponse(response) {
         filePreview.classList.add("hidden");
         realFileInput.value = "";
       });
+
       document.getElementById("search-history").addEventListener("input", (e) => {
         const query = e.target.value.toLowerCase();
         document.querySelectorAll(".alu-history-item-container").forEach(item => {
           item.style.display = item.innerText.toLowerCase().includes(query) ? "flex" : "none";
         });
       });
+
       const upgradeBtn = document.getElementById("upgrade-btn");
       const bonusModal = document.getElementById("bonus-modal");
       const closeBonusModal = document.getElementById("close-bonus-modal");
@@ -1672,9 +1654,6 @@ function handleGoogleCredentialResponse(response) {
         checkGlobalLimits();
       });
 
-      /* ============================================================
-         PARAMÈTRES + COULEURS D'ACCENTUATION + LANGUE
-         ============================================================ */
       const accentThemes = {
         white:     { accent: "#e3e3e3", strong: "#ffffff", soft: "rgba(227, 227, 227, 0.14)" },
         red:       { accent: "#f87171", strong: "#ef4444", soft: "rgba(239, 68, 68, 0.14)" },
@@ -1695,31 +1674,23 @@ function handleGoogleCredentialResponse(response) {
         });
         localStorage.setItem("alu_accent_color", colorKey);
       }
-      const settingsBtn = document.getElementById("settings-btn");
-      const settingsScreen = document.getElementById("settings-screen");
-      const settingsBackBtn = document.getElementById("settings-back-btn");
-      settingsBtn.addEventListener("click", () => {
-        settingsScreen.classList.add("open");
+
+      document.getElementById("settings-btn").addEventListener("click", () => {
+        document.getElementById("settings-screen").classList.add("open");
         sidebar.classList.remove("active");
         backdrop.classList.add("hidden");
       });
-      settingsBackBtn.addEventListener("click", () => {
-        settingsScreen.classList.remove("open");
+      document.getElementById("settings-back-btn").addEventListener("click", () => {
+        document.getElementById("settings-screen").classList.remove("open");
       });
       document.querySelectorAll(".alu-color-swatch").forEach(btn => {
-        btn.addEventListener("click", () => {
-          applyAccentColor(btn.dataset.color);
-        });
+        btn.addEventListener("click", () => applyAccentColor(btn.dataset.color));
       });
-      // Language buttons in settings
       document.getElementById("settings-lang-fr").addEventListener("click", () => applyLanguage("fr"));
       document.getElementById("settings-lang-pl").addEventListener("click", () => applyLanguage("pl"));
 
-      // Blanc par défaut
       const savedAccent = localStorage.getItem("alu_accent_color") || "white";
       applyAccentColor(savedAccent);
-
-      // Apply saved language on load
       applyLanguage(currentLang);
     }
 
@@ -1766,14 +1737,13 @@ function handleGoogleCredentialResponse(response) {
           },
           body: JSON.stringify({
             model: selectedModelName,
-           messages: [
-  {
-    role: "system",
-    content: `
-Tu es ALUETOO AI, une intelligence artificielle créée par Léo Ciach. Si l'utilisateur te demande qui t'a créée, réponds simplement Léo Ciach. Ne répète pas son nom sans raison. Réponds naturellement dans la langue de l'utilisateur. Utilise le Markdown quand c'est utile : titres, listes, gras, italique, tableaux et blocs de code. Pour afficher une image accessible, utilise ![Description de l'image](URL_DIRECTE_DE_L_IMAGE). N'invente pas d'URL et ne prétends pas avoir généré une image sans outil disponible.et vc de liens du style https://thumb.wikimedia.org/wikipedia/commons/thumb/`
-  },
-  ...conversationHistory
-],
+            messages: [
+              {
+                role: "system",
+                content: `Tu es ALUETOO AI, une intelligence artificielle créée par Léo Ciach. Si l'utilisateur te demande qui t'a créée, réponds simplement Léo Ciach. Ne répète pas son nom sans raison. Réponds naturellement dans la langue de l'utilisateur. Utilise le Markdown quand c'est utile : titres, listes, gras, italique, tableaux et blocs de code. Pour afficher une image accessible, utilise ![Description de l'image](URL_DIRECTE_DE_L_IMAGE). N'invente pas d'URL et ne prétends pas avoir généré une image sans outil disponible.`
+              },
+              ...conversationHistory
+            ],
             temperature: 0.7,
             stream: true
           })
@@ -1807,9 +1777,11 @@ Tu es ALUETOO AI, une intelligence artificielle créée par Léo Ciach. Si l'uti
       container.scrollTop = container.scrollHeight;
       checkGlobalLimits();
     }
+
     function formatAIResponse(text) {
       return marked.parse(text);
     }
+
     function appendMessageUI(sender, text) {
       const holder = document.getElementById("chat-messages");
       const wrapper = document.createElement("div");
@@ -1829,6 +1801,7 @@ Tu es ALUETOO AI, une intelligence artificielle créée par Léo Ciach. Si l'uti
       holder.appendChild(wrapper);
       return wrapper;
     }
+
     function saveConversationToGlobal(userPrompt, aiReply) {
       const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
       let list = saved ? JSON.parse(saved) : [];
@@ -1854,6 +1827,7 @@ Tu es ALUETOO AI, une intelligence artificielle créée par Léo Ciach. Si l'uti
       localStorage.setItem(`alu_history_${currentUser.email}`, JSON.stringify(list));
       loadSavedConversations();
     }
+
     function togglePinChat(id, e) {
       e.stopPropagation();
       const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
@@ -1866,6 +1840,7 @@ Tu es ALUETOO AI, une intelligence artificielle créée par Léo Ciach. Si l'uti
         loadSavedConversations();
       }
     }
+
     function deleteChat(id, e) {
       e.stopPropagation();
       if (!confirm(t("confirmDelete"))) return;
@@ -1882,6 +1857,7 @@ Tu es ALUETOO AI, une intelligence artificielle créée par Léo Ciach. Si l'uti
       }
       loadSavedConversations();
     }
+
     function loadSavedConversations() {
       const listContainer = document.getElementById("history-list");
       const saved = localStorage.getItem(`alu_history_${currentUser.email}`);
@@ -1937,6 +1913,7 @@ Tu es ALUETOO AI, une intelligence artificielle créée par Léo Ciach. Si l'uti
         listContainer.appendChild(container);
       });
     }
+
     document.addEventListener("DOMContentLoaded", () => {
       setupAuth();
       setupUI();

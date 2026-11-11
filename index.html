@@ -1137,7 +1137,7 @@
   <div id="bonus-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#1e1f20] border border-[#303133] p-6 rounded-2xl w-full max-w-sm shadow-2xl text-center">
       <h3 class="text-lg font-medium mb-2 text-white" id="txt-bonus-title">Message Bonus Quotidien</h3>
-      <p class="text-xs text-[#9aa0a6] mb-4" id="txt-bonus-desc">Voici le code secret d'aujourd'hui. Entrez-le ci-dessous pour obtenir +1 message bonus sur Aluetoo Fast Lite !</p>
+      <p class="text-xs text-[#9aa0a6] mb-4" id="txt-bonus-desc">Les messages bonus sont attribués par l'administration et contrôlés par le serveur.</p>
       <div class="bg-[#131314] border border-[#303133] rounded-xl py-3 px-4 mb-4 font-mono text-xl tracking-widest font-bold select-all" id="daily-code-display" style="color: var(--accent);">...</div>
       <input type="text" id="bonus-code-input" class="w-full bg-[#131314] border border-[#303133] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--accent)] text-white mb-4 text-center uppercase font-mono" placeholder="Recopiez le code ici">
       <div class="flex justify-end gap-2 w-full">
@@ -1599,8 +1599,9 @@
       const submitBonusBtn = document.getElementById("submit-bonus-btn");
       const bonusInput = document.getElementById("bonus-code-input");
       upgradeBtn.addEventListener("click", () => {
-        document.getElementById("daily-code-display").innerText = getDailyCodeDetails().code;
-        bonusInput.value = "";
+        document.getElementById("daily-code-display").innerText = "Bonus gérés par l’administration";
+        bonusInput.classList.add("hidden");
+        submitBonusBtn.classList.add("hidden");
         bonusModal.classList.remove("hidden");
       });
       closeBonusModal.addEventListener("click", () => bonusModal.classList.add("hidden"));

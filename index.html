@@ -83,12 +83,32 @@
     }
     .alu-app {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 280px minmax(0, 1fr);
+      transition: grid-template-columns 320ms cubic-bezier(0.22, 1, 0.36, 1);
       height: 100%;
       height: 100dvh;
       background: var(--bg);
       position: relative;
     }
+    .alu-app.sidebar-collapsed { grid-template-columns: 76px minmax(0, 1fr); }
+    .alu-sidebar { min-width: 0; transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1), padding 320ms ease; }
+    .alu-app.sidebar-collapsed .alu-brand { justify-content: center; width: 100%; }
+    .alu-app.sidebar-collapsed .alu-brand-name,
+    .alu-app.sidebar-collapsed .alu-new-chat span:not(.material-symbols-outlined),
+    .alu-app.sidebar-collapsed .alu-nav-item span:not(.material-symbols-outlined),
+    .alu-app.sidebar-collapsed .alu-section-label,
+    .alu-app.sidebar-collapsed .alu-history-section,
+    .alu-app.sidebar-collapsed .alu-user-info,
+    .alu-app.sidebar-collapsed .alu-loc-block,
+    .alu-app.sidebar-collapsed .alu-nav-items > div { display: none !important; }
+    .alu-app.sidebar-collapsed .alu-new-chat,
+    .alu-app.sidebar-collapsed .alu-nav-item { justify-content: center; padding: 12px 0; gap: 0; min-height: 44px; }
+    .alu-app.sidebar-collapsed .alu-user-row { justify-content: center; flex-wrap: wrap; gap: 6px; }
+    .alu-app.sidebar-collapsed .alu-user-row .alu-avatar { margin: 0 auto 4px; }
+    .alu-app.sidebar-collapsed .alu-sidebar-top { justify-content: center; }
+    .alu-sidebar-toggle { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; color: var(--text-soft); transition: background 180ms ease, transform 320ms ease; }
+    .alu-sidebar-toggle:hover { background: rgba(255,255,255,.07); color: var(--text); }
+    .alu-app.sidebar-collapsed .alu-sidebar-toggle { transform: rotate(180deg); }
     /* ========== SIDEBAR ========== */
     .alu-sidebar {
       display: flex;
@@ -970,8 +990,22 @@
     /* ========== RESPONSIVE ========== */
     @media screen and (max-width: 900px) {
       .alu-app {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+        transition: none;
       }
+      .alu-app.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
+      .alu-app.sidebar-collapsed .alu-brand-name,
+      .alu-app.sidebar-collapsed .alu-new-chat span:not(.material-symbols-outlined),
+      .alu-app.sidebar-collapsed .alu-nav-item span:not(.material-symbols-outlined),
+      .alu-app.sidebar-collapsed .alu-section-label,
+      .alu-app.sidebar-collapsed .alu-history-section,
+      .alu-app.sidebar-collapsed .alu-user-info,
+      .alu-app.sidebar-collapsed .alu-loc-block,
+      .alu-app.sidebar-collapsed .alu-nav-items > div { display: initial !important; }
+      .alu-app.sidebar-collapsed .alu-new-chat,
+      .alu-app.sidebar-collapsed .alu-nav-item { justify-content: flex-start; padding: 10px 16px; }
+      .alu-app.sidebar-collapsed .alu-user-row { justify-content: flex-start; flex-wrap: nowrap; }
+      .alu-app.sidebar-collapsed .alu-user-row .alu-avatar { margin: 0; }
       .alu-sidebar {
         position: fixed !important;
         top: 0 !important;
@@ -1081,7 +1115,7 @@
           <span class="alu-brand-name">Aluetoo</span>
         </div>
       </div>
-      <button class="alu-new-chat" id="new-chat-btn">
+      <button class="alu-new-chat" id="new-chat-btn" type="button" title="Nouvelle conversation" aria-label="Nouvelle conversation">
         <span class="material-symbols-outlined">add</span>
         <span id="txt-new-chat">Nouvelle conversation</span>
       </button>
@@ -1089,7 +1123,7 @@
         <div class="relative px-2 mb-2">
           <input type="text" id="search-history" placeholder="Rechercher une discussion..." class="w-full bg-[#131314] border border-[#303133] rounded-xl pl-3 pr-3 py-2 text-xs text-white focus:outline-none focus:border-[var(--accent)]">
         </div>
-        <button class="alu-nav-item" onclick="window.open('https://aluetoo.github.io/alu-code/', '_blank')">
+        <button class="alu-nav-item" title="Mode Code" aria-label="Mode Code" onclick="window.open('https://aluetoo.github.io/alu-code/', '_blank')">
           <span class="material-symbols-outlined">code</span>
           <span id="txt-mode-code">Mode Code</span>
         </button>
@@ -1101,7 +1135,7 @@
         </div>
       </div>
       <div class="alu-activity">
-        <button class="alu-nav-item" id="events-nav-btn" type="button">
+        <button class="alu-nav-item" id="events-nav-btn" type="button" title="Événements" aria-label="Événements">
           <span class="material-symbols-outlined">event</span>
           <span id="txt-activity">Événements</span>
         </button>
@@ -1133,8 +1167,8 @@
     <main class="alu-main">
       <div class="alu-topbar">
         <div class="alu-topbar-left">
-          <button class="p-2 text-gray-400 hover:text-white block md:hidden focus:outline-none" id="mobile-sidebar-toggle">
-            <span class="material-symbols-outlined" style="font-size: 24px;">menu</span>
+          <button class="alu-sidebar-toggle" id="mobile-sidebar-toggle" type="button" title="Afficher ou réduire le menu" aria-label="Afficher ou réduire le menu" aria-expanded="true">
+            <span class="material-symbols-outlined" style="font-size: 24px;">menu_open</span>
           </button>
         </div>
         <div class="alu-topbar-right">
@@ -2049,16 +2083,32 @@
       const sidebar = document.getElementById("alu-sidebar");
       const sidebarToggle = document.getElementById("mobile-sidebar-toggle");
       const backdrop = document.getElementById("sidebar-backdrop");
+      const appContainer = document.getElementById("app-container");
+      const isMobileSidebar = () => window.matchMedia("(max-width: 900px)").matches;
+      const closeMobileSidebar = () => {
+        sidebar.classList.remove("active");
+        backdrop.classList.add("hidden");
+        if (sidebarToggle) sidebarToggle.setAttribute("aria-expanded", "false");
+      };
       if (sidebarToggle) {
         sidebarToggle.addEventListener("click", (e) => {
           e.stopPropagation();
-          sidebar.classList.add("active");
-          backdrop.classList.remove("hidden");
+          if (isMobileSidebar()) {
+            const opening = !sidebar.classList.contains("active");
+            sidebar.classList.toggle("active", opening);
+            backdrop.classList.toggle("hidden", !opening);
+            sidebarToggle.setAttribute("aria-expanded", String(opening));
+          } else {
+            const collapsed = appContainer.classList.toggle("sidebar-collapsed");
+            sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+            sidebarToggle.title = collapsed ? "Agrandir le menu" : "Réduire le menu";
+          }
         });
       }
-      backdrop.addEventListener("click", () => {
-        sidebar.classList.remove("active");
-        backdrop.classList.add("hidden");
+      backdrop.addEventListener("click", closeMobileSidebar);
+      window.addEventListener("resize", () => {
+        if (!isMobileSidebar()) closeMobileSidebar();
+        else appContainer.classList.remove("sidebar-collapsed");
       });
 
       input.addEventListener("input", () => {
@@ -2087,8 +2137,7 @@
         currentActiveChatPinned = false;
         document.getElementById("welcome-screen").classList.remove("hidden");
         input.style.height = "auto";
-        sidebar.classList.remove("active");
-        backdrop.classList.add("hidden");
+        closeMobileSidebar();
       });
 
       document.getElementById("logout-btn").addEventListener("click", async () => {
@@ -2105,8 +2154,7 @@
       });
 
       document.getElementById("events-nav-btn").addEventListener("click", async () => {
-        document.getElementById("alu-sidebar").classList.remove("active");
-        document.getElementById("sidebar-backdrop").classList.add("hidden");
+        closeMobileSidebar();
         await loadUpcomingEvents();
 
       });
@@ -2223,7 +2271,7 @@
       }
       document.getElementById("settings-btn").addEventListener("click", () => {
         showSettingsCategories(); document.getElementById("settings-screen").classList.add("open");
-        sidebar.classList.remove("active"); backdrop.classList.add("hidden");
+        closeMobileSidebar();
       });
       document.getElementById("disconnect-google-btn").addEventListener("click", async () => {
         if(!window.confirm("Déconnecter Google de ce compte Aluetoo ?")) return;

@@ -1302,15 +1302,16 @@
           <button class="alu-color-swatch" data-color="orange" style="background:#f97316" title="Orange"><span>Orange</span></button>
         </div>
       </section>
+      <section class="settings-section settings-card settings-category-panel" data-settings-panel="appearance" style="display:none">
+         <div class="settings-card-heading"><span class="material-symbols-outlined">blur_on</span><div><h3 id="txt-appearance-panel-title">Mode transparence</h3><p id="txt-appearance-panel-description">Active un effet glassmorphism sur l’interface</p></div></div>
+         <div class="settings-appearance-row"><div><strong id="txt-glass-toggle-title">Effet glassmorphism</strong><small id="txt-glass-toggle-description">Rends les panneaux translucides et floutés</small></div><label class="settings-switch" aria-label="Activer le mode transparence"><input type="checkbox" id="glass-mode-toggle"><span class="settings-switch-track"></span></label></div>
+         <div class="settings-slider-wrap" id="glass-intensity-wrap" hidden><div class="settings-slider-head"><label for="glass-intensity" id="txt-glass-intensity">Intensité de l’effet</label><output id="glass-intensity-value" for="glass-intensity">18</output></div><input type="range" id="glass-intensity" min="1" max="30" step="1" value="18"><div class="settings-preview-glass" id="txt-glass-preview">Aperçu de l’effet verre dépoli</div></div>
+       </section>
     </div>
   </div>
 
 
-  <section class="settings-section settings-card settings-category-panel" data-settings-panel="appearance" style="display:none">
-     <div class="settings-card-heading"><span class="material-symbols-outlined">blur_on</span><div><h3 id="txt-appearance-panel-title">Mode transparence</h3><p id="txt-appearance-panel-description">Active un effet glassmorphism sur l’interface</p></div></div>
-     <div class="settings-appearance-row"><div><strong id="txt-glass-toggle-title">Effet glassmorphism</strong><small id="txt-glass-toggle-description">Rends les panneaux translucides et floutés</small></div><label class="settings-switch" aria-label="Activer le mode transparence"><input type="checkbox" id="glass-mode-toggle"><span class="settings-switch-track"></span></label></div>
-     <div class="settings-slider-wrap" id="glass-intensity-wrap" hidden><div class="settings-slider-head"><label for="glass-intensity" id="txt-glass-intensity">Intensité de l’effet</label><output id="glass-intensity-value" for="glass-intensity">18</output></div><input type="range" id="glass-intensity" min="1" max="30" step="1" value="18"><div class="settings-preview-glass" id="txt-glass-preview">Aperçu de l’effet verre dépoli</div></div>
-   </section>
+
    <!-- ACCOUNT SECURITY MODAL -->
   <div id="account-security-modal" class="fixed inset-0 bg-black/75 z-[80] flex items-center justify-center p-4 hidden">
     <div class="bg-[#1e1f20] border border-[#45464a] p-6 rounded-2xl w-full max-w-md shadow-2xl">

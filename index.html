@@ -736,14 +736,22 @@
     .alu-msg-content p:last-child {
       margin-bottom: 0;
     }
-    /* Les tableaux défilent seuls sur mobile, sans élargir la conversation. */
-    .alu-msg-content .alu-table-scroll{display:block;width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;margin:1rem 0}
-    .alu-msg-content .alu-table-scroll table{width:max-content;min-width:100%;border-collapse:collapse}
-    .alu-msg-content pre{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
-    .alu-code-toolbar{display:flex;justify-content:flex-end;gap:8px;padding:7px 9px;background:#242528;border:1px solid #3a3b3d;border-bottom:0;border-radius:10px 10px 0 0}
-    .alu-code-toolbar button{font-size:.75rem;padding:5px 9px;border:1px solid #45464a;border-radius:7px;color:var(--text-soft)}
-    .alu-code-toolbar button:hover{background:#34363a;color:var(--text)}
-    .alu-code-toolbar+pre{border-top-left-radius:0;border-top-right-radius:0}
+    /* Le contenu reste dans la largeur de la conversation ; seul le tableau défile. */
+    .alu-messages,.alu-msg,.alu-msg-body,.alu-msg-content{min-width:0;max-width:100%;box-sizing:border-box}
+    .alu-msg{width:100%}
+    .alu-msg-assistant .alu-msg-body{flex:1 1 0;width:0;min-width:0}
+    .alu-msg-content{width:100%;overflow-wrap:anywhere}
+    .alu-msg-content .alu-table-scroll{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;contain:inline-size;margin:1rem 0}
+    .alu-msg-content .alu-table-scroll table{width:max-content;min-width:100%;max-width:none;border-collapse:collapse}
+    .alu-msg-content pre{box-sizing:border-box;width:100%;max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+    .alu-code-toolbar{display:flex;justify-content:flex-end;align-items:center;gap:5px;padding:7px 9px;background:#0d0e0f;border:1px solid #2a2b2d;border-bottom:0;border-radius:12px 12px 0 0}
+    .alu-code-toolbar button{display:grid;place-items:center;width:34px;height:30px;padding:0;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--text-soft);cursor:pointer}
+    .alu-code-toolbar button .material-symbols-outlined{font-size:19px}
+    .alu-code-toolbar button:hover{background:#242528;color:var(--text)}
+    .alu-code-toolbar+pre{margin-top:0;border-top-left-radius:0;border-top-right-radius:0;border-top-color:#0d0e0f}
+    .alu-code-preview{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.78);display:flex;flex-direction:column;padding:16px}
+    .alu-code-preview-bar{display:flex;justify-content:flex-end;padding:8px;background:#202123;border-radius:12px 12px 0 0}
+    .alu-code-preview iframe{width:100%;height:100%;border:0;background:#fff;border-radius:0 0 12px 12px}
     .alu-msg-content ul,
     .alu-msg-content ol {
       margin: 0.8rem 0 1rem 1.5rem;
@@ -2513,12 +2521,20 @@
         const extensions = {python:"py",py:"py",javascript:"js",js:"js",typescript:"ts",ts:"ts",jsx:"jsx",tsx:"tsx",html:"html",css:"css",json:"json",java:"java",c:"c",cpp:"cpp",csharp:"cs",cs:"cs",php:"php",ruby:"rb",rb:"rb",go:"go",rust:"rs",rs:"rs",sql:"sql",bash:"sh",sh:"sh",shell:"sh",yaml:"yml",yml:"yml",xml:"xml",markdown:"md",md:"md"};
         const toolbar = document.createElement("div");
         toolbar.className = "alu-code-toolbar";
-        const copy = document.createElement("button");
-        copy.type = "button"; copy.dataset.codeAction = "copy"; copy.textContent = "Copier";
-        const download = document.createElement("button");
-        download.type = "button"; download.dataset.codeAction = "download"; download.textContent = "Télécharger";
-        download.dataset.extension = extensions[language] || "txt";
-        toolbar.append(copy, download);
+        const makeAction = (action, icon, label) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.codeAction = action;
+          button.title = label;
+          button.setAttribute("aria-label", label);
+          button.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">' + icon + '</span>';
+          return button;
+        };
+        toolbar.append(makeAction("copy","content_copy","Copier le code"));
+        if (["html","htm","javascript","js"].includes(language)) toolbar.append(makeAction("run","play_arrow","Exécuter / aperçu"));
+        const save = makeAction("download","download","Enregistrer le fichier");
+        save.dataset.extension = extensions[language] || "txt";
+        toolbar.append(save);
         pre.parentNode.insertBefore(toolbar, pre);
       });
       if (contentDiv.dataset.codeActionsBound) return;
@@ -2533,23 +2549,48 @@
         if (button.dataset.codeAction === "copy") {
           try {
             await navigator.clipboard.writeText(source);
-            button.textContent = "Copié !";
-            setTimeout(() => { if (button.isConnected) button.textContent = "Copier"; }, 1600);
+            button.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">check</span>';
+            button.title = "Copié";
+            setTimeout(() => { if (button.isConnected) { button.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">content_copy</span>'; button.title = "Copier le code"; } }, 1400);
           } catch (_) {
             const field = document.createElement("textarea");
             field.value = source; field.style.position = "fixed"; field.style.opacity = "0";
             document.body.appendChild(field); field.select();
-            try { document.execCommand("copy"); button.textContent = "Copié !"; }
-            finally { field.remove(); setTimeout(() => { if (button.isConnected) button.textContent = "Copier"; }, 1600); }
+            try { document.execCommand("copy"); button.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">check</span>'; }
+            finally { field.remove(); setTimeout(() => { if (button.isConnected) button.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">content_copy</span>'; }, 1400); }
           }
-        } else {
+        } else if (button.dataset.codeAction === "download") {
           const extension = button.dataset.extension || "txt";
-          const blob = new Blob([source], {type:"text/plain;charset=utf-8"});
+          const mime = ({html:"text/html",htm:"text/html",js:"text/javascript",ts:"text/plain",css:"text/css",json:"application/json",xml:"application/xml",svg:"image/svg+xml",md:"text/markdown",py:"text/x-python"})[extension] || "text/plain";
+          const blob = new Blob([source], {type:mime + ";charset=utf-8"});
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = url; link.download = "aluetoo-code." + extension;
+          link.style.display = "none";
           document.body.appendChild(link); link.click(); link.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+        } else if (button.dataset.codeAction === "run") {
+          let html = source;
+          const languageClass = [...code.classList].find(name => name.startsWith("language-")) || "";
+          const language = languageClass.slice(9).toLowerCase();
+          if (language === "js" || language === "javascript") html = '<!doctype html><html><head><meta charset="utf-8"></head><body><pre id="output"></pre><script>const log=(...v)=>document.getElementById("output").textContent+=v.join(" ")+"\\n";console.log=log;try{\n' + source.replace(/<\/script/gi,"<\\/script") + '\n}catch(e){log(String(e))}</script></body></html>';
+          const overlay = document.createElement("div");
+          overlay.className = "alu-code-preview";
+          const bar = document.createElement("div");
+          bar.className = "alu-code-preview-bar";
+          const close = document.createElement("button");
+          close.type = "button";
+          close.className = "alu-tool-btn";
+          close.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">close</span>';
+          close.title = "Fermer l’aperçu";
+          close.addEventListener("click", () => overlay.remove());
+          bar.appendChild(close);
+          const frame = document.createElement("iframe");
+          frame.setAttribute("sandbox","allow-scripts");
+          frame.setAttribute("title","Aperçu isolé du code");
+          overlay.append(bar,frame);
+          document.body.appendChild(overlay);
+          frame.srcdoc = html;
         }
       });
     }

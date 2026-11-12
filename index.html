@@ -442,6 +442,28 @@
       gap: 12px;
       flex-wrap: wrap;
     }
+    .settings-organized { display:flex; flex-direction:column; gap:16px; padding-top:18px; }
+    .settings-card { margin:0; padding:18px; border:1px solid #30343b; border-radius:18px; background:linear-gradient(145deg,#1d1f22,#18191b); }
+    .settings-card-heading { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+    .settings-card-heading>.material-symbols-outlined { color:var(--accent); font-size:23px; }
+    .settings-card-heading h3 { margin:0; color:var(--text); font-size:1rem; font-weight:650; }
+    .settings-card-heading p { margin:3px 0 0; color:var(--muted); font-size:.78rem; }
+    .settings-account-info { display:grid; margin-bottom:12px; border-top:1px solid #30343b; }
+    .settings-account-row { display:flex; justify-content:space-between; gap:14px; padding:12px 0; border-bottom:1px solid #30343b; font-size:.84rem; }
+    .settings-account-row span { color:var(--muted); }
+    .settings-account-row strong { color:var(--text); text-align:right; overflow-wrap:anywhere; font-weight:550; }
+    .settings-action-btn { display:flex; align-items:center; gap:10px; width:100%; padding:12px 13px; margin-top:8px; border:1px solid #383b40; border-radius:12px; color:var(--text); background:#232528; text-align:left; font-size:.86rem; }
+    .settings-action-btn .material-symbols-outlined { color:var(--accent); font-size:19px; }
+    .settings-action-btn.danger { color:#fca5a5; border-color:rgba(239,68,68,.35); }
+    .settings-action-btn.danger .material-symbols-outlined { color:#f87171; }
+    .settings-action-btn:disabled { opacity:.45; }
+    .settings-help-text { color:var(--muted); font-size:.74rem; line-height:1.5; margin:10px 2px 0; }
+    .settings-language-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .settings-language-grid .alu-lang-btn { min-width:0; justify-content:flex-start; }
+    .alu-accent-grid { grid-template-columns:repeat(4,minmax(0,1fr)); max-width:none; gap:10px; }
+    .alu-color-swatch { position:relative; display:flex; align-items:center; justify-content:center; width:100%; height:62px; border-radius:13px; }
+    .alu-color-swatch span { position:absolute; bottom:5px; left:0; right:0; color:#111; font-size:.65rem; font-weight:700; text-shadow:0 1px 2px rgba(255,255,255,.35); }
+    @media(max-width:380px){.settings-card{padding:14px;}}
     /* ========== MAIN ========== */
     .alu-main {
       position: relative !important;
@@ -992,8 +1014,9 @@
   <!-- AUTH -->
   <div id="auth-screen" class="fixed inset-0 bg-[#131314] z-50 flex items-center justify-center p-4">
     <div class="auth-lang-bar">
-      <button class="auth-lang-btn active" data-lang="fr" id="auth-lang-fr">FR</button>
-      <button class="auth-lang-btn" data-lang="pl" id="auth-lang-pl">PL</button>
+      <button class="auth-lang-btn active" data-lang="fr">FR</button><button class="auth-lang-btn" data-lang="pl">PL</button>
+      <button class="auth-lang-btn" data-lang="en">EN</button><button class="auth-lang-btn" data-lang="nl">NL</button>
+      <button class="auth-lang-btn" data-lang="de">DE</button><button class="auth-lang-btn" data-lang="es">ES</button><button class="auth-lang-btn" data-lang="it">IT</button>
     </div>
     <div class="bg-[#1e1f20] border border-[#303133] p-8 rounded-2xl w-full max-w-md shadow-2xl">
       <div class="flex items-center gap-2 mb-6 justify-center">
@@ -1166,39 +1189,45 @@
   <!-- PARAMÈTRES -->
   <div id="settings-screen">
     <div class="settings-header">
-      <button class="settings-back-btn" id="settings-back-btn">
-        <span class="material-symbols-outlined">arrow_back</span>
-      </button>
+      <button class="settings-back-btn" id="settings-back-btn" aria-label="Retour"><span class="material-symbols-outlined">arrow_back</span></button>
       <h2 class="settings-title" id="txt-settings-title">Paramètres</h2>
     </div>
-    <div class="settings-content">
-      <div class="settings-section">
-        <p class="settings-section-title" id="txt-lang-section">Langue</p>
-        <div class="alu-lang-grid">
-          <button class="alu-lang-btn active" data-lang="fr" id="settings-lang-fr">Français</button>
-          <button class="alu-lang-btn" data-lang="pl" id="settings-lang-pl">Polski</button>
+    <div class="settings-content settings-organized">
+      <section class="settings-section settings-card">
+        <div class="settings-card-heading"><span class="material-symbols-outlined">person</span><div><h3 id="txt-account-section">Compte</h3><p id="txt-account-description">Informations et sécurité du compte</p></div></div>
+        <div class="settings-account-info">
+          <div class="settings-account-row"><span id="txt-account-name-label">Nom</span><strong id="account-settings-name"></strong></div>
+          <div class="settings-account-row"><span id="txt-account-email-label">Adresse e-mail</span><strong id="account-settings-email"></strong></div>
+          <div class="settings-account-row"><span id="txt-google-status-label">Google</span><strong id="account-google-status">—</strong></div>
         </div>
-      </div>
-      <div class="settings-section">
-        <p class="settings-section-title" id="txt-accent-section">Couleur d'accentuation</p>
+        <button type="button" id="disconnect-google-btn" class="settings-action-btn"><span class="material-symbols-outlined">link_off</span><span id="txt-disconnect-google">Déconnecter Google</span></button>
+        <button type="button" id="change-password-btn" class="settings-action-btn"><span class="material-symbols-outlined">lock_reset</span><span id="txt-change-password">Changer mon mot de passe</span></button>
+        <button type="button" id="settings-logout-btn" class="settings-action-btn"><span class="material-symbols-outlined">logout</span><span id="txt-settings-logout">Se déconnecter</span></button>
+        <button type="button" id="delete-account-btn" class="settings-action-btn danger"><span class="material-symbols-outlined">delete_forever</span><span id="txt-delete-account">Supprimer définitivement mon compte</span></button>
+        <p class="settings-help-text" id="txt-account-help">Un code de vérification sera envoyé par e-mail pour les opérations sensibles.</p>
+      </section>
+      <section class="settings-section settings-card">
+        <div class="settings-card-heading"><span class="material-symbols-outlined">translate</span><div><h3 id="txt-lang-section">Langue</h3><p id="txt-language-description">Choisis la langue de l’application</p></div></div>
+        <div class="alu-lang-grid settings-language-grid">
+          <button class="alu-lang-btn" data-lang="fr">🇫🇷 Français</button><button class="alu-lang-btn" data-lang="pl">🇵🇱 Polski</button>
+          <button class="alu-lang-btn" data-lang="en">🇬🇧 English</button><button class="alu-lang-btn" data-lang="nl">🇳🇱 Nederlands</button>
+          <button class="alu-lang-btn" data-lang="de">🇩🇪 Deutsch</button><button class="alu-lang-btn" data-lang="es">🇪🇸 Español</button>
+          <button class="alu-lang-btn" data-lang="it">🇮🇹 Italiano</button>
+        </div>
+      </section>
+      <section class="settings-section settings-card">
+        <div class="settings-card-heading"><span class="material-symbols-outlined">palette</span><div><h3 id="txt-accent-section">Couleur d’accentuation</h3><p id="txt-color-description">Personnalise les couleurs de l’interface</p></div></div>
         <div class="alu-accent-grid">
-          <button class="alu-color-swatch" data-color="white" style="background:#e3e3e3" title="Blanc"></button>
-          <button class="alu-color-swatch" data-color="red" style="background:#ef4444" title="Rouge"></button>
-          <button class="alu-color-swatch" data-color="green" style="background:#22c55e" title="Vert"></button>
-          <button class="alu-color-swatch" data-color="blue" style="background:#3b82f6" title="Bleu"></button>
-          <button class="alu-color-swatch" data-color="mauve" style="background:#a78bfa" title="Mauve"></button>
-          <button class="alu-color-swatch" data-color="pink" style="background:#ec4899" title="Rose"></button>
-          <button class="alu-color-swatch" data-color="turquoise" style="background:#14b8a6" title="Turquoise"></button>
-          <button class="alu-color-swatch" data-color="orange" style="background:#f97316" title="Orange"></button>
+          <button class="alu-color-swatch" data-color="white" style="background:#e3e3e3" title="Blanc"><span>Blanc</span></button>
+          <button class="alu-color-swatch" data-color="red" style="background:#ef4444" title="Rouge"><span>Rouge</span></button>
+          <button class="alu-color-swatch" data-color="green" style="background:#22c55e" title="Vert"><span>Vert</span></button>
+          <button class="alu-color-swatch" data-color="blue" style="background:#3b82f6" title="Bleu"><span>Bleu</span></button>
+          <button class="alu-color-swatch" data-color="mauve" style="background:#a78bfa" title="Mauve"><span>Mauve</span></button>
+          <button class="alu-color-swatch" data-color="pink" style="background:#ec4899" title="Rose"><span>Rose</span></button>
+          <button class="alu-color-swatch" data-color="turquoise" style="background:#14b8a6" title="Turquoise"><span>Turquoise</span></button>
+          <button class="alu-color-swatch" data-color="orange" style="background:#f97316" title="Orange"><span>Orange</span></button>
         </div>
-      </div>
-      <div class="settings-section">
-        <p class="settings-section-title">Sécurité du compte</p>
-        <p class="text-xs text-[#9aa0a6] mb-3">Compte : <span id="account-settings-email"></span></p>
-        <button type="button" id="change-password-btn" class="w-full rounded-xl border border-[#45464a] px-4 py-3 text-sm text-left mb-2">Changer mon mot de passe</button>
-        <button type="button" id="delete-account-btn" class="w-full rounded-xl border border-red-500/50 px-4 py-3 text-sm text-left text-red-300">Supprimer définitivement mon compte</button>
-        <p class="text-xs text-[#9aa0a6] mt-2">Un code de vérification sera envoyé à l’adresse e-mail du compte.</p>
-      </div>
+      </section>
     </div>
   </div>
 
@@ -1373,6 +1402,10 @@
       }
     };
 
+    const extraTranslations={"en":{"accountSection":"Account","accountDescription":"Your account information and security","accountName":"Name","accountEmail":"Email address","googleStatus":"Google","disconnectGoogle":"Disconnect Google","changePassword":"Change password","logout":"Log out","deleteAccount":"Permanently delete account","accountHelp":"A verification code will be sent to your account email for sensitive actions.","languageDescription":"Choose the app language","colorDescription":"Customize the interface colors","connected":"Connected","notConnected":"Not connected","langSection":"Language","accentSection":"Accent color","settingsTitle":"Settings","newChat":"New chat","searchHistory":"Search conversations...","modeCode":"Code mode","noConversation":"No conversations","activity":"Events","updateLocation":"Update location","askAluetoo":"Ask Aluetoo","close":"Close","colorWhite":"White","colorRed":"Red","colorGreen":"Green","colorBlue":"Blue","colorMauve":"Mauve","colorPink":"Pink","colorTurquoise":"Turquoise","colorOrange":"Orange"},"nl":{"accountSection":"Account","accountDescription":"Accountgegevens en beveiliging","accountName":"Naam","accountEmail":"E-mailadres","googleStatus":"Google","disconnectGoogle":"Google ontkoppelen","changePassword":"Wachtwoord wijzigen","logout":"Uitloggen","deleteAccount":"Account definitief verwijderen","accountHelp":"Voor gevoelige acties wordt een verificatiecode naar je e-mailadres gestuurd.","languageDescription":"Kies de taal van de app","colorDescription":"Pas de interfacekleuren aan","connected":"Verbonden","notConnected":"Niet verbonden","langSection":"Taal","accentSection":"Accentkleur","settingsTitle":"Instellingen","newChat":"Nieuw gesprek","searchHistory":"Gesprekken zoeken...","modeCode":"Codemodus","noConversation":"Geen gesprekken","activity":"Evenementen","updateLocation":"Locatie bijwerken","askAluetoo":"Vraag het aan Aluetoo","close":"Sluiten","colorWhite":"Wit","colorRed":"Rood","colorGreen":"Groen","colorBlue":"Blauw","colorMauve":"Paars","colorPink":"Roze","colorTurquoise":"Turquoise","colorOrange":"Oranje"},"de":{"accountSection":"Konto","accountDescription":"Kontoinformationen und Sicherheit","accountName":"Name","accountEmail":"E-Mail-Adresse","googleStatus":"Google","disconnectGoogle":"Google trennen","changePassword":"Passwort ändern","logout":"Abmelden","deleteAccount":"Konto dauerhaft löschen","accountHelp":"Bei sensiblen Aktionen wird ein Bestätigungscode an deine Konto-E-Mail gesendet.","languageDescription":"App-Sprache auswählen","colorDescription":"Passe die Farben der Oberfläche an","connected":"Verbunden","notConnected":"Nicht verbunden","langSection":"Sprache","accentSection":"Akzentfarbe","settingsTitle":"Einstellungen","newChat":"Neuer Chat","searchHistory":"Unterhaltungen suchen...","modeCode":"Code-Modus","noConversation":"Keine Unterhaltungen","activity":"Ereignisse","updateLocation":"Standort aktualisieren","askAluetoo":"Frage Aluetoo","close":"Schließen","colorWhite":"Weiß","colorRed":"Rot","colorGreen":"Grün","colorBlue":"Blau","colorMauve":"Lila","colorPink":"Rosa","colorTurquoise":"Türkis","colorOrange":"Orange"},"es":{"accountSection":"Cuenta","accountDescription":"Información y seguridad de tu cuenta","accountName":"Nombre","accountEmail":"Correo electrónico","googleStatus":"Google","disconnectGoogle":"Desconectar Google","changePassword":"Cambiar contraseña","logout":"Cerrar sesión","deleteAccount":"Eliminar cuenta permanentemente","accountHelp":"Para las acciones sensibles se enviará un código de verificación al correo de tu cuenta.","languageDescription":"Elige el idioma de la aplicación","colorDescription":"Personaliza los colores de la interfaz","connected":"Conectado","notConnected":"No conectado","langSection":"Idioma","accentSection":"Color de acento","settingsTitle":"Ajustes","newChat":"Nuevo chat","searchHistory":"Buscar conversaciones...","modeCode":"Modo código","noConversation":"No hay conversaciones","activity":"Eventos","updateLocation":"Actualizar ubicación","askAluetoo":"Pregunta a Aluetoo","close":"Cerrar","colorWhite":"Blanco","colorRed":"Rojo","colorGreen":"Verde","colorBlue":"Azul","colorMauve":"Malva","colorPink":"Rosa","colorTurquoise":"Turquesa","colorOrange":"Naranja"},"it":{"accountSection":"Account","accountDescription":"Informazioni e sicurezza del tuo account","accountName":"Nome","accountEmail":"Indirizzo e-mail","googleStatus":"Google","disconnectGoogle":"Disconnetti Google","changePassword":"Cambia password","logout":"Esci","deleteAccount":"Elimina definitivamente l’account","accountHelp":"Per le operazioni sensibili verrà inviato un codice di verifica all’e-mail del tuo account.","languageDescription":"Scegli la lingua dell’app","colorDescription":"Personalizza i colori dell’interfaccia","connected":"Connesso","notConnected":"Non connesso","langSection":"Lingua","accentSection":"Colore di accento","settingsTitle":"Impostazioni","newChat":"Nuova chat","searchHistory":"Cerca conversazioni...","modeCode":"Modalità codice","noConversation":"Nessuna conversazione","activity":"Eventi","updateLocation":"Aggiorna posizione","askAluetoo":"Chiedi ad Aluetoo","close":"Chiudi","colorWhite":"Bianco","colorRed":"Rosso","colorGreen":"Verde","colorBlue":"Blu","colorMauve":"Malva","colorPink":"Rosa","colorTurquoise":"Turchese","colorOrange":"Arancione"}};
+    Object.entries(extraTranslations).forEach(([lang, values]) => { translations[lang] = { ...translations.fr, ...values }; });
+    translations.fr = {...translations.fr,accountSection:"Compte",accountDescription:"Informations et sécurité de ton compte",accountName:"Nom",accountEmail:"Adresse e-mail",googleStatus:"Google",disconnectGoogle:"Déconnecter Google",changePassword:"Changer mon mot de passe",logout:"Se déconnecter",deleteAccount:"Supprimer définitivement mon compte",accountHelp:"Un code de vérification sera envoyé par e-mail pour les opérations sensibles.",languageDescription:"Choisis la langue de l’application",colorDescription:"Personnalise les couleurs de l’interface",connected:"Connecté",notConnected:"Non connecté",colorWhite:"Blanc",colorRed:"Rouge",colorGreen:"Vert",colorBlue:"Bleu",colorMauve:"Mauve",colorPink:"Rose",colorTurquoise:"Turquoise",colorOrange:"Orange"};
+    translations.pl = {...translations.pl,accountSection:"Konto",accountDescription:"Informacje o koncie i zabezpieczenia",accountName:"Imię",accountEmail:"Adres e-mail",googleStatus:"Google",disconnectGoogle:"Odłącz Google",changePassword:"Zmień hasło",logout:"Wyloguj się",deleteAccount:"Trwale usuń konto",accountHelp:"Kod weryfikacyjny zostanie wysłany na adres e-mail konta.",languageDescription:"Wybierz język aplikacji",colorDescription:"Dostosuj kolory interfejsu",connected:"Połączono",notConnected:"Nie połączono",colorWhite:"Biały",colorRed:"Czerwony",colorGreen:"Zielony",colorBlue:"Niebieski",colorMauve:"Fioletowy",colorPink:"Różowy",colorTurquoise:"Turkusowy",colorOrange:"Pomarańczowy"};
     function t(key) {
       return translations[currentLang][key] || translations.fr[key] || key;
     }
@@ -1394,10 +1427,7 @@
       document.getElementById("auth-toggle-btn").innerText = isSignUp ? t("toggleBtnLogin") : t("toggleBtnCreate");
       document.getElementById("txt-or").innerText = t("or");
 
-      document.getElementById("auth-lang-fr").classList.toggle("active", lang === "fr");
-      document.getElementById("auth-lang-pl").classList.toggle("active", lang === "pl");
-      document.getElementById("settings-lang-fr").classList.toggle("active", lang === "fr");
-      document.getElementById("settings-lang-pl").classList.toggle("active", lang === "pl");
+      document.querySelectorAll("[data-lang]").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
 
       document.getElementById("txt-new-chat").innerText = t("newChat");
       document.getElementById("search-history").placeholder = t("searchHistory");
@@ -1412,6 +1442,9 @@
       document.getElementById("txt-upgrade").innerText = t("upgrade");
       document.getElementById("txt-lang-section").innerText = t("langSection");
       document.getElementById("txt-accent-section").innerText = t("accentSection");
+      const settingLabels={"txt-account-section":"accountSection","txt-account-description":"accountDescription","txt-account-name-label":"accountName","txt-account-email-label":"accountEmail","txt-google-status-label":"googleStatus","txt-disconnect-google":"disconnectGoogle","txt-change-password":"changePassword","txt-settings-logout":"logout","txt-delete-account":"deleteAccount","txt-account-help":"accountHelp","txt-language-description":"languageDescription","txt-color-description":"colorDescription"};
+      Object.entries(settingLabels).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.textContent=t(key);});
+      document.querySelectorAll(".alu-color-swatch").forEach(btn=>{const key="color"+btn.dataset.color[0].toUpperCase()+btn.dataset.color.slice(1);const name=t(key);btn.title=name;const label=btn.querySelector("span");if(label)label.textContent=name;});
 
       if (currentUser) {
         document.getElementById("welcome-text").innerText = t("welcomeWithName").replace("{name}", currentUser.firstname.toUpperCase());
@@ -1649,8 +1682,7 @@
 
       wireAccountSecurity();
 
-      document.getElementById("auth-lang-fr").addEventListener("click", () => applyLanguage("fr"));
-      document.getElementById("auth-lang-pl").addEventListener("click", () => applyLanguage("pl"));
+      document.querySelectorAll(".auth-lang-btn[data-lang]").forEach(btn => btn.addEventListener("click", () => applyLanguage(btn.dataset.lang)));
 
       document.getElementById("auth-toggle-btn").addEventListener("click", (e) => {
         e.preventDefault();
@@ -2123,11 +2155,35 @@
         localStorage.setItem("alu_accent_color", colorKey);
       }
 
+      async function refreshAccountSettings() {
+        document.getElementById("account-settings-name").textContent = currentUser?.firstname || "—";
+        document.getElementById("account-settings-email").textContent = currentUser?.email || "—";
+        const status=document.getElementById("account-google-status"), disconnect=document.getElementById("disconnect-google-btn");
+        status.textContent="—"; disconnect.disabled=true;
+        try {
+          const {data,error}=await supabaseClient.auth.getUser(); if(error) throw error;
+          const identities=data.user?.identities||[], googleIdentity=identities.find(identity=>identity.provider==="google");
+          status.textContent=googleIdentity?t("connected"):t("notConnected");
+          // Conserver au moins une autre méthode d’authentification.
+          disconnect.disabled=!googleIdentity || identities.length<2;
+          disconnect.title=disconnect.disabled&&googleIdentity?"Ajoute une autre méthode de connexion avant de déconnecter Google.":"";
+        } catch(error){ console.warn("Vérification du lien Google impossible:",error); }
+      }
       document.getElementById("settings-btn").addEventListener("click", () => {
-        document.getElementById("account-settings-email").textContent = currentUser?.email || "";
-        document.getElementById("settings-screen").classList.add("open");
-        sidebar.classList.remove("active");
-        backdrop.classList.add("hidden");
+        refreshAccountSettings(); document.getElementById("settings-screen").classList.add("open");
+        sidebar.classList.remove("active"); backdrop.classList.add("hidden");
+      });
+      document.getElementById("disconnect-google-btn").addEventListener("click", async () => {
+        if(!window.confirm("Déconnecter Google de ce compte Aluetoo ?")) return;
+        const {data,error}=await supabaseClient.auth.getUser(); if(error){alert(error.message);return;}
+        const identities=data.user?.identities||[], identity=identities.find(item=>item.provider==="google");
+        if(!identity||identities.length<2){alert("Ajoute d’abord une autre méthode de connexion avant de déconnecter Google.");return;}
+        const result=await supabaseClient.auth.unlinkIdentity(identity);
+        if(result.error){alert(result.error.message);return;}
+        await refreshAccountSettings(); alert("Google a été déconnecté de ton compte Aluetoo.");
+      });
+      document.getElementById("settings-logout-btn").addEventListener("click", async () => {
+        const {error}=await supabaseClient.auth.signOut(); if(error) alert(error.message);
       });
       document.getElementById("settings-back-btn").addEventListener("click", () => {
         document.getElementById("settings-screen").classList.remove("open");
@@ -2135,8 +2191,7 @@
       document.querySelectorAll(".alu-color-swatch").forEach(btn => {
         btn.addEventListener("click", () => applyAccentColor(btn.dataset.color));
       });
-      document.getElementById("settings-lang-fr").addEventListener("click", () => applyLanguage("fr"));
-      document.getElementById("settings-lang-pl").addEventListener("click", () => applyLanguage("pl"));
+      document.querySelectorAll(".settings-language-grid [data-lang]").forEach(btn => btn.addEventListener("click", () => applyLanguage(btn.dataset.lang)));
 
       const savedAccent = localStorage.getItem("alu_accent_color") || "white";
       applyAccentColor(savedAccent);

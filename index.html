@@ -443,6 +443,17 @@
       flex-wrap: wrap;
     }
     .settings-organized { display:flex; flex-direction:column; gap:16px; padding-top:18px; }
+    .settings-category-menu { display:flex; flex-direction:column; gap:10px; }
+    .settings-category-tile { display:flex; align-items:center; gap:14px; width:100%; padding:17px; border:1px solid #30343b; border-radius:15px; background:linear-gradient(145deg,#1d1f22,#18191b); color:var(--text); text-align:left; }
+    .settings-category-tile > .material-symbols-outlined:first-child { color:var(--accent); font-size:24px; }
+    .settings-category-copy { display:flex; flex:1; min-width:0; flex-direction:column; gap:4px; }
+    .settings-category-copy strong { font-size:.95rem; font-weight:650; }
+    .settings-category-copy small { color:var(--muted); font-size:.76rem; }
+    .settings-chevron { color:var(--muted); }
+    .settings-category-back { border:0; background:transparent; color:var(--text); padding:4px; margin-right:8px; }
+    .settings-category-back .material-symbols-outlined { font-size:25px; }
+    .settings-category-panel { width:100%; }
+
     .settings-card { margin:0; padding:18px; border:1px solid #30343b; border-radius:18px; background:linear-gradient(145deg,#1d1f22,#18191b); }
     .settings-card-heading { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
     .settings-card-heading>.material-symbols-outlined { color:var(--accent); font-size:23px; }
@@ -1193,10 +1204,16 @@
   <div id="settings-screen">
     <div class="settings-header">
       <button class="settings-back-btn" id="settings-back-btn" aria-label="Retour"><span class="material-symbols-outlined">arrow_back</span></button>
+      <button type="button" id="settings-category-back" class="settings-category-back" aria-label="Retour aux catégories" style="display:none"><span class="material-symbols-outlined">chevron_left</span></button>
       <h2 class="settings-title" id="txt-settings-title">Paramètres</h2>
     </div>
     <div class="settings-content settings-organized">
-      <section class="settings-section settings-card">
+      <div id="settings-category-menu" class="settings-category-menu">
+        <button type="button" class="settings-category-tile" data-settings-category="account"><span class="material-symbols-outlined">person</span><span class="settings-category-copy"><strong id="txt-account-section">Compte</strong><small id="txt-account-description">Informations et sécurité du compte</small></span><span class="material-symbols-outlined settings-chevron">chevron_right</span></button>
+        <button type="button" class="settings-category-tile" data-settings-category="language"><span class="material-symbols-outlined">translate</span><span class="settings-category-copy"><strong id="txt-lang-section">Langue</strong><small id="txt-language-description">Choisis la langue de l’application</small></span><span class="material-symbols-outlined settings-chevron">chevron_right</span></button>
+        <button type="button" class="settings-category-tile" data-settings-category="colors"><span class="material-symbols-outlined">palette</span><span class="settings-category-copy"><strong id="txt-accent-section">Couleur d’accentuation</strong><small id="txt-color-description">Personnalise les couleurs de l’interface</small></span><span class="material-symbols-outlined settings-chevron">chevron_right</span></button>
+      </div>
+      <section class="settings-section settings-card settings-category-panel" data-settings-panel="account" style="display:none">
         <div class="settings-card-heading"><span class="material-symbols-outlined">person</span><div><h3 id="txt-account-section">Compte</h3><p id="txt-account-description">Informations et sécurité du compte</p></div></div>
         <div class="settings-account-info">
           <div class="settings-account-row"><span id="txt-account-name-label">Nom</span><strong id="account-settings-name"></strong></div>
@@ -1209,7 +1226,7 @@
         <button type="button" id="delete-account-btn" class="settings-action-btn danger"><span class="material-symbols-outlined">delete_forever</span><span id="txt-delete-account">Supprimer définitivement mon compte</span></button>
         <p class="settings-help-text" id="txt-account-help">Un code de vérification sera envoyé par e-mail pour les opérations sensibles.</p>
       </section>
-      <section class="settings-section settings-card">
+      <section class="settings-section settings-card settings-category-panel" data-settings-panel="language" style="display:none">
         <div class="settings-card-heading"><span class="material-symbols-outlined">translate</span><div><h3 id="txt-lang-section">Langue</h3><p id="txt-language-description">Choisis la langue de l’application</p></div></div>
         <div class="alu-lang-grid settings-language-grid">
           <button class="alu-lang-btn" data-lang="fr">🇫🇷 Français</button><button class="alu-lang-btn" data-lang="pl">🇵🇱 Polski</button>
@@ -1218,7 +1235,7 @@
           <button class="alu-lang-btn" data-lang="it">🇮🇹 Italiano</button>
         </div>
       </section>
-      <section class="settings-section settings-card">
+      <section class="settings-section settings-card settings-category-panel" data-settings-panel="colors" style="display:none">
         <div class="settings-card-heading"><span class="material-symbols-outlined">palette</span><div><h3 id="txt-accent-section">Couleur d’accentuation</h3><p id="txt-color-description">Personnalise les couleurs de l’interface</p></div></div>
         <div class="alu-accent-grid">
           <button class="alu-color-swatch" data-color="white" style="background:#e3e3e3" title="Blanc"><span>Blanc</span></button>
@@ -2162,6 +2179,33 @@
         });
         localStorage.setItem("alu_accent_color", colorKey);
       }
+
+      const settingsCategoryTitles = {
+        account: "Compte", language: "Langue", colors: "Couleurs"
+      };
+      function showSettingsCategory(category) {
+        document.getElementById("settings-category-menu").style.display = "none";
+        document.querySelectorAll("[data-settings-panel]").forEach(panel => {
+          panel.style.display = panel.dataset.settingsPanel === category ? "block" : "none";
+        });
+        document.getElementById("settings-category-back").style.display = "inline-flex";
+        const titleKey = category === "account" ? "accountSection" : category === "language" ? "langSection" : "accentSection";
+        document.getElementById("txt-settings-title").textContent = t(titleKey);
+      }
+      function showSettingsCategories() {
+        document.getElementById("settings-category-menu").style.display = "flex";
+        document.querySelectorAll("[data-settings-panel]").forEach(panel => panel.style.display = "none");
+        document.getElementById("settings-category-back").style.display = "none";
+        document.getElementById("txt-settings-title").textContent = t("settingsTitle");
+      }
+      document.querySelectorAll("[data-settings-category]").forEach(button => {
+        button.addEventListener("click", () => {
+          const category = button.dataset.settingsCategory;
+          showSettingsCategory(category);
+          if (category === "account") refreshAccountSettings();
+        });
+      });
+      document.getElementById("settings-category-back").addEventListener("click", showSettingsCategories);
 
       async function refreshAccountSettings() {
         document.getElementById("account-settings-name").textContent = currentUser?.firstname || "—";

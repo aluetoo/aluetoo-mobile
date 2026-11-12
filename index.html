@@ -1214,7 +1214,7 @@
         <button type="button" class="settings-category-tile" data-settings-category="colors"><span class="material-symbols-outlined">palette</span><span class="settings-category-copy"><strong id="txt-accent-section">Couleur d’accentuation</strong><small id="txt-color-description">Personnalise les couleurs de l’interface</small></span><span class="material-symbols-outlined settings-chevron">chevron_right</span></button>
       </div>
       <section class="settings-section settings-card settings-category-panel" data-settings-panel="account" style="display:none">
-        <div class="settings-card-heading"><span class="material-symbols-outlined">person</span><div><h3 id="txt-account-section">Compte</h3><p id="txt-account-description">Informations et sécurité du compte</p></div></div>
+        <div class="settings-card-heading"><span class="material-symbols-outlined">person</span><div><h3 id="txt-account-panel-section">Compte</h3><p id="txt-account-panel-description">Informations et sécurité du compte</p></div></div>
         <div class="settings-account-info">
           <div class="settings-account-row"><span id="txt-account-name-label">Nom</span><strong id="account-settings-name"></strong></div>
           <div class="settings-account-row"><span id="txt-account-email-label">Adresse e-mail</span><strong id="account-settings-email"></strong></div>
@@ -1227,7 +1227,7 @@
         <p class="settings-help-text" id="txt-account-help">Un code de vérification sera envoyé par e-mail pour les opérations sensibles.</p>
       </section>
       <section class="settings-section settings-card settings-category-panel" data-settings-panel="language" style="display:none">
-        <div class="settings-card-heading"><span class="material-symbols-outlined">translate</span><div><h3 id="txt-lang-section">Langue</h3><p id="txt-language-description">Choisis la langue de l’application</p></div></div>
+        <div class="settings-card-heading"><span class="material-symbols-outlined">translate</span><div><h3 id="txt-lang-panel-section">Langue</h3><p id="txt-language-panel-description">Choisis la langue de l’application</p></div></div>
         <div class="alu-lang-grid settings-language-grid">
           <button class="alu-lang-btn" data-lang="fr">🇫🇷 Français</button><button class="alu-lang-btn" data-lang="pl">🇵🇱 Polski</button>
           <button class="alu-lang-btn" data-lang="en">🇬🇧 English</button><button class="alu-lang-btn" data-lang="nl">🇳🇱 Nederlands</button>
@@ -1236,7 +1236,7 @@
         </div>
       </section>
       <section class="settings-section settings-card settings-category-panel" data-settings-panel="colors" style="display:none">
-        <div class="settings-card-heading"><span class="material-symbols-outlined">palette</span><div><h3 id="txt-accent-section">Couleur d’accentuation</h3><p id="txt-color-description">Personnalise les couleurs de l’interface</p></div></div>
+        <div class="settings-card-heading"><span class="material-symbols-outlined">palette</span><div><h3 id="txt-accent-panel-section">Couleur d’accentuation</h3><p id="txt-color-panel-description">Personnalise les couleurs de l’interface</p></div></div>
         <div class="alu-accent-grid">
           <button class="alu-color-swatch" data-color="white" style="background:#e3e3e3" title="Blanc"><span>Blanc</span></button>
           <button class="alu-color-swatch" data-color="red" style="background:#ef4444" title="Rouge"><span>Rouge</span></button>
@@ -2222,7 +2222,7 @@
         } catch(error){ console.warn("Vérification du lien Google impossible:",error); }
       }
       document.getElementById("settings-btn").addEventListener("click", () => {
-        refreshAccountSettings(); document.getElementById("settings-screen").classList.add("open");
+        showSettingsCategories(); document.getElementById("settings-screen").classList.add("open");
         sidebar.classList.remove("active"); backdrop.classList.add("hidden");
       });
       document.getElementById("disconnect-google-btn").addEventListener("click", async () => {
@@ -2238,7 +2238,7 @@
         const {error}=await supabaseClient.auth.signOut(); if(error) alert(error.message);
       });
       document.getElementById("settings-back-btn").addEventListener("click", () => {
-        document.getElementById("settings-screen").classList.remove("open");
+        showSettingsCategories(); document.getElementById("settings-screen").classList.remove("open");
       });
       document.querySelectorAll(".alu-color-swatch").forEach(btn => {
         btn.addEventListener("click", () => applyAccentColor(btn.dataset.color));

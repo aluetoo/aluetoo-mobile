@@ -495,6 +495,25 @@
     .alu-color-swatch { position:relative; display:flex; align-items:center; justify-content:center; width:100%; height:62px; border-radius:13px; }
     .alu-color-swatch span { position:absolute; bottom:5px; left:0; right:0; color:#111; font-size:.65rem; font-weight:700; text-shadow:0 1px 2px rgba(255,255,255,.35); }
     @media(max-width:380px){.settings-card{padding:14px;}}
+    .settings-appearance-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+    .settings-appearance-row strong{display:block;font-size:.9rem;color:var(--text)}
+    .settings-appearance-row small{display:block;margin-top:4px;color:var(--muted);font-size:.76rem;line-height:1.45}
+    .settings-switch{position:relative;flex:0 0 auto;width:48px;height:28px}
+    .settings-switch input{position:absolute;opacity:0;width:1px;height:1px}
+    .settings-switch-track{position:absolute;inset:0;border-radius:99px;background:#45484d;transition:background .2s ease;cursor:pointer}
+    .settings-switch-track:after{content:"";position:absolute;width:20px;height:20px;left:4px;top:4px;border-radius:50%;background:#fff;transition:transform .2s ease}
+    .settings-switch input:checked+.settings-switch-track{background:var(--accent-strong)}
+    .settings-switch input:checked+.settings-switch-track:after{transform:translateX(20px);background:#171819}
+    .settings-slider-wrap{padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+    .settings-slider-wrap[hidden]{display:none}
+    .settings-slider-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;font-size:.85rem}
+    .settings-slider-head output{color:var(--accent);font-weight:650;font-variant-numeric:tabular-nums}
+    #glass-intensity{width:100%;accent-color:var(--accent-strong);cursor:pointer}
+    .settings-preview-glass{margin-top:14px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.025));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text-soft);font-size:.78rem}
+    html.glass-mode{--glass-blur:18px;--glass-alpha:.42}
+    html.glass-mode .alu-sidebar,html.glass-mode .alu-topbar,html.glass-mode .alu-composer,html.glass-mode .settings-card,html.glass-mode .settings-category-tile,html.glass-mode .alu-history-item-container,html.glass-mode .alu-new-chat,html.glass-mode .alu-nav-item,html.glass-mode .alu-user-block{background:rgba(30,31,32,var(--glass-alpha))!important;border-color:rgba(255,255,255,.13)!important;backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important;-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important}
+    html.glass-mode #settings-screen{background:rgba(19,19,20,var(--glass-alpha))!important;backdrop-filter:blur(var(--glass-blur)) saturate(165%);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(165%)}
+    html.glass-mode .alu-main{background:rgba(19,19,20,.82)!important}
     /* ========== MAIN ========== */
     .alu-main {
       position: relative !important;
@@ -1246,6 +1265,7 @@
         <button type="button" class="settings-category-tile" data-settings-category="account"><span class="material-symbols-outlined">person</span><span class="settings-category-copy"><strong id="txt-account-section">Compte</strong><small id="txt-account-description">Informations et sécurité du compte</small></span><span class="material-symbols-outlined settings-chevron">chevron_right</span></button>
         <button type="button" class="settings-category-tile" data-settings-category="language"><span class="material-symbols-outlined">translate</span><span class="settings-category-copy"><strong id="txt-lang-section">Langue</strong><small id="txt-language-description">Choisis la langue de l’application</small></span><span class="material-symbols-outlined settings-chevron">chevron_right</span></button>
         <button type="button" class="settings-category-tile" data-settings-category="colors"><span class="material-symbols-outlined">palette</span><span class="settings-category-copy"><strong id="txt-accent-section">Couleur d’accentuation</strong><small id="txt-color-description">Personnalise les couleurs de l’interface</small></span><span class="material-symbols-outlined settings-chevron">chevron_right</span></button>
+         <button type="button" class="settings-category-tile" data-settings-category="appearance"><span class="material-symbols-outlined">blur_on</span><span class="settings-category-copy"><strong id="txt-appearance-section">Apparence</strong><small id="txt-appearance-description">Transparence et effet verre dépoli</small></span><span class="material-symbols-outlined settings-chevron">chevron_right</span></button>
       </div>
       <section class="settings-section settings-card settings-category-panel" data-settings-panel="account" style="display:none">
         <div class="settings-card-heading"><span class="material-symbols-outlined">person</span><div><h3 id="txt-account-panel-section">Compte</h3><p id="txt-account-panel-description">Informations et sécurité du compte</p></div></div>
@@ -1286,7 +1306,12 @@
   </div>
 
 
-  <!-- ACCOUNT SECURITY MODAL -->
+  <section class="settings-section settings-card settings-category-panel" data-settings-panel="appearance" style="display:none">
+     <div class="settings-card-heading"><span class="material-symbols-outlined">blur_on</span><div><h3 id="txt-appearance-panel-title">Mode transparence</h3><p id="txt-appearance-panel-description">Active un effet glassmorphism sur l’interface</p></div></div>
+     <div class="settings-appearance-row"><div><strong id="txt-glass-toggle-title">Effet glassmorphism</strong><small id="txt-glass-toggle-description">Rends les panneaux translucides et floutés</small></div><label class="settings-switch" aria-label="Activer le mode transparence"><input type="checkbox" id="glass-mode-toggle"><span class="settings-switch-track"></span></label></div>
+     <div class="settings-slider-wrap" id="glass-intensity-wrap" hidden><div class="settings-slider-head"><label for="glass-intensity" id="txt-glass-intensity">Intensité de l’effet</label><output id="glass-intensity-value" for="glass-intensity">18</output></div><input type="range" id="glass-intensity" min="1" max="30" step="1" value="18"><div class="settings-preview-glass" id="txt-glass-preview">Aperçu de l’effet verre dépoli</div></div>
+   </section>
+   <!-- ACCOUNT SECURITY MODAL -->
   <div id="account-security-modal" class="fixed inset-0 bg-black/75 z-[80] flex items-center justify-center p-4 hidden">
     <div class="bg-[#1e1f20] border border-[#45464a] p-6 rounded-2xl w-full max-w-md shadow-2xl">
       <h3 id="account-modal-title" class="text-lg font-semibold mb-2">Sécurité du compte</h3>
@@ -1463,7 +1488,7 @@
     Object.assign(extraTranslations.es,{last:"Recientes",eventPopupTitle:"Eventos",eventEmpty:"No hay eventos por ahora.",eventLoadError:"No se pudieron cargar los eventos. Inténtalo de nuevo.",eventStarts:"Empieza",eventEnds:"Termina",eventNoDetails:"No hay más detalles.",locDesc:"Según tu ubicación",upgrade:"Mejorar tu plan",welcome:"¿Tienes nuevas ideas?",welcomeWithName:"¿Tienes nuevas ideas, {name}?",limitReached:"Límite de mensajes alcanzado. Cambia de modelo.",bonusTitle:"Mensaje extra diario",bonusDesc:"Introduce el código secreto de hoy para obtener +1 mensaje extra en Aluetoo Fast Lite.",bonusPlaceholder:"Introduce el código",activateBonus:"Activar bonus",wrongPassword:"Contraseña incorrecta.",activitySoon:"¡Actividad próximamente!",wrongCode:"Código incorrecto.",alreadyClaimed:"¡Ya lo has reclamado hoy!",bonusGranted:"¡Bonus concedido!",confirmDelete:"¿Eliminar esta conversación?",enterLocation:"Introduce tu país o ubicación:",toggleTextNoAccount:"¿Aún no tienes cuenta?",toggleTextHasAccount:"¿Ya tienes una cuenta?",toggleBtnCreate:"Crear cuenta",toggleBtnLogin:"Iniciar sesión",btnLogin:"Iniciar sesión",btnSignup:"Registrarse",labelFirstname:"Nombre",labelPassword:"Contraseña",placeholderFirstname:"Tu nombre",placeholderEmail:"nombre@ejemplo.com",authTitleLogin:"Iniciar sesión en Aluetoo",authTitleSignup:"Crear una cuenta de Aluetoo",or:"o"});
     Object.assign(extraTranslations.it,{last:"Recenti",eventPopupTitle:"Eventi",eventEmpty:"Nessun evento al momento.",eventLoadError:"Impossibile caricare gli eventi. Riprova più tardi.",eventStarts:"Inizia",eventEnds:"Termina",eventNoDetails:"Nessun altro dettaglio.",locDesc:"In base alla tua posizione",upgrade:"Passa a un piano superiore",welcome:"Hai nuove idee?",welcomeWithName:"Hai nuove idee, {name}?",limitReached:"Limite di messaggi raggiunto. Cambia modello.",bonusTitle:"Messaggio bonus giornaliero",bonusDesc:"Inserisci il codice segreto di oggi per ottenere +1 messaggio bonus su Aluetoo Fast Lite!",bonusPlaceholder:"Inserisci il codice",activateBonus:"Attiva bonus",wrongPassword:"Password non corretta.",activitySoon:"Attività disponibile a breve!",wrongCode:"Codice non corretto.",alreadyClaimed:"Già richiesto oggi!",bonusGranted:"Bonus assegnato!",confirmDelete:"Eliminare questa conversazione?",enterLocation:"Inserisci il tuo paese o la tua posizione:",toggleTextNoAccount:"Non hai ancora un account?",toggleTextHasAccount:"Hai già un account?",toggleBtnCreate:"Crea account",toggleBtnLogin:"Accedi",btnLogin:"Accedi",btnSignup:"Registrati",labelFirstname:"Nome",labelPassword:"Password",placeholderFirstname:"Il tuo nome",placeholderEmail:"nome@esempio.it",authTitleLogin:"Accedi ad Aluetoo",authTitleSignup:"Crea un account Aluetoo",or:"o"});
     Object.entries(extraTranslations).forEach(([lang, values]) => { translations[lang] = { ...translations.fr, ...values }; });
-    translations.fr = {...translations.fr,accountSection:"Compte",accountDescription:"Informations et sécurité de ton compte",accountName:"Nom",accountEmail:"Adresse e-mail",googleStatus:"Google",disconnectGoogle:"Déconnecter Google",changePassword:"Changer mon mot de passe",logout:"Se déconnecter",deleteAccount:"Supprimer définitivement mon compte",accountHelp:"Un code de vérification sera envoyé par e-mail pour les opérations sensibles.",languageDescription:"Choisis la langue de l’application",colorDescription:"Personnalise les couleurs de l’interface",connected:"Connecté",notConnected:"Non connecté",colorWhite:"Blanc",colorRed:"Rouge",colorGreen:"Vert",colorBlue:"Bleu",colorMauve:"Mauve",colorPink:"Rose",colorTurquoise:"Turquoise",colorOrange:"Orange"};
+    translations.fr = {...translations.fr,appearanceSection:"Apparence",accountSection:"Compte",accountDescription:"Informations et sécurité de ton compte",accountName:"Nom",accountEmail:"Adresse e-mail",googleStatus:"Google",disconnectGoogle:"Déconnecter Google",changePassword:"Changer mon mot de passe",logout:"Se déconnecter",deleteAccount:"Supprimer définitivement mon compte",accountHelp:"Un code de vérification sera envoyé par e-mail pour les opérations sensibles.",languageDescription:"Choisis la langue de l’application",colorDescription:"Personnalise les couleurs de l’interface",connected:"Connecté",notConnected:"Non connecté",colorWhite:"Blanc",colorRed:"Rouge",colorGreen:"Vert",colorBlue:"Bleu",colorMauve:"Mauve",colorPink:"Rose",colorTurquoise:"Turquoise",colorOrange:"Orange"};
     translations.pl = {...translations.pl,accountSection:"Konto",accountDescription:"Informacje o koncie i zabezpieczenia",accountName:"Imię",accountEmail:"Adres e-mail",googleStatus:"Google",disconnectGoogle:"Odłącz Google",changePassword:"Zmień hasło",logout:"Wyloguj się",deleteAccount:"Trwale usuń konto",accountHelp:"Kod weryfikacyjny zostanie wysłany na adres e-mail konta.",languageDescription:"Wybierz język aplikacji",colorDescription:"Dostosuj kolory interfejsu",connected:"Połączono",notConnected:"Nie połączono",colorWhite:"Biały",colorRed:"Czerwony",colorGreen:"Zielony",colorBlue:"Niebieski",colorMauve:"Fioletowy",colorPink:"Różowy",colorTurquoise:"Turkusowy",colorOrange:"Pomarańczowy"};
     function t(key) {
       return translations[currentLang][key] || translations.fr[key] || key;
@@ -2229,7 +2254,7 @@
       }
 
       const settingsCategoryTitles = {
-        account: "Compte", language: "Langue", colors: "Couleurs"
+        account: "Compte", language: "Langue", colors: "Couleurs", appearance: "Apparence"
       };
       function showSettingsCategory(category) {
         document.getElementById("settings-category-menu").style.display = "none";
@@ -2237,7 +2262,7 @@
           panel.style.display = panel.dataset.settingsPanel === category ? "block" : "none";
         });
         document.getElementById("settings-category-back").style.display = "inline-flex";
-        const titleKey = category === "account" ? "accountSection" : category === "language" ? "langSection" : "accentSection";
+        const titleKey = category === "account" ? "accountSection" : category === "language" ? "langSection" : category === "colors" ? "accentSection" : "appearanceSection";
         document.getElementById("txt-settings-title").textContent = t(titleKey);
       }
       function showSettingsCategories() {
@@ -2254,6 +2279,18 @@
         });
       });
       document.getElementById("settings-category-back").addEventListener("click", showSettingsCategories);
+      const glassToggle=document.getElementById("glass-mode-toggle"),glassSlider=document.getElementById("glass-intensity"),glassWrap=document.getElementById("glass-intensity-wrap"),glassValue=document.getElementById("glass-intensity-value");
+      function applyGlassSettings(enabled,intensity){
+        const level=Math.max(1,Math.min(30,Number(intensity)||18));
+        document.documentElement.classList.toggle("glass-mode",Boolean(enabled));
+        document.documentElement.style.setProperty("--glass-blur",(level*1.15).toFixed(1)+"px");
+        document.documentElement.style.setProperty("--glass-alpha",(0.78-level*.018).toFixed(3));
+        glassToggle.checked=Boolean(enabled);glassSlider.value=String(level);glassValue.textContent=String(level);glassWrap.hidden=!enabled;
+        localStorage.setItem("alu_glass_enabled",enabled?"1":"0");localStorage.setItem("alu_glass_intensity",String(level));
+      }
+      glassToggle.addEventListener("change",()=>applyGlassSettings(glassToggle.checked,glassSlider.value));
+      glassSlider.addEventListener("input",()=>applyGlassSettings(glassToggle.checked,glassSlider.value));
+      applyGlassSettings(localStorage.getItem("alu_glass_enabled")==="1",localStorage.getItem("alu_glass_intensity")||18);
 
       async function refreshAccountSettings() {
         document.getElementById("account-settings-name").textContent = currentUser?.firstname || "—";

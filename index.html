@@ -1325,7 +1325,7 @@
         <label class="block text-xs text-[#9aa0a6] mb-1">Nouveau mot de passe</label>
         <input id="account-new-password" type="password" autocomplete="new-password" minlength="8" class="w-full bg-[#131314] border border-[#45464a] rounded-xl px-4 py-3 text-sm mb-3" placeholder="8 caractères minimum" />
         <label class="block text-xs text-[#9aa0a6] mb-1">Confirmer le mot de passe</label>
-        <input id="account-confirm-password" type="password" autocomplete="new-password" minlength="8" class="w-full bg-[#131314] border border-[#45464a] rounded-xl px-4 py-3 text-sm mb-3" placeholder="Répète le mot de passe" />
+        <input id="account-confirm-password" type="password" autocomplete="new-password" minlength="8" class="w-full bg-[#131314] border border-[#45464a] rounded-xl px-4 py-3 text-sm mb-3" placeholder="Répétez le mot de passe" />
         <button id="account-save-password-btn" type="button" class="w-full rounded-xl py-3 text-sm font-medium mb-3" style="background:var(--accent-strong);color:#0d0e0f">Enregistrer le nouveau mot de passe</button>
       </div>
       <button id="account-modal-cancel-btn" type="button" class="w-full text-sm text-[#aeb2b8] py-2">Annuler</button>
@@ -1584,7 +1584,7 @@
     async function handleGoogleCredentialResponse(response) {
       try {
         if (!response?.credential || !googleSignInNonce) {
-          throw new Error("Google n’a pas renvoyé de jeton de connexion valide. Réessaie.");
+          throw new Error("Google n’a pas renvoyé de jeton de connexion valide. Veuillez réessayer.");
         }
         const { data, error } = await supabaseClient.auth.signInWithIdToken({
           provider: "google",
@@ -1722,7 +1722,7 @@
 
       document.getElementById("account-password-step").classList.remove("hidden");
       document.getElementById("account-code-step").classList.add("hidden");
-      document.getElementById("account-modal-description").textContent = "Code vérifié. Choisis maintenant ton nouveau mot de passe.";
+      document.getElementById("account-modal-description").textContent = "Code vérifié. Choisissez maintenant votre nouveau mot de passe.";
     }
 
     async function saveAccountNewPassword() {
@@ -2421,7 +2421,7 @@
           } else {
             contentDiv.innerText = errorData.message ||
               (response.status === 403 ? "Ce compte est bloqué." :
-               response.status === 429 ? "Limite de messages atteinte. Réessaie plus tard." :
+               response.status === 429 ? "Limite de messages atteinte. Veuillez réessayer plus tard." :
                "Le service IA est momentanément indisponible.");
           }
           statusDiv.remove();

@@ -507,9 +507,7 @@
     html.glass-mode{--glass-blur:18px;--glass-alpha:.82}
     /* Transparence uniforme sur les principales surfaces de l’interface. */
     html.glass-mode .alu-sidebar,html.glass-mode .alu-topbar,html.glass-mode .alu-composer,html.glass-mode .alu-model-pill,html.glass-mode .alu-model-menu-bottom,html.glass-mode .settings-card,html.glass-mode .settings-category-tile,html.glass-mode .alu-history-item-container,html.glass-mode .alu-user-block{background:rgba(30,31,32,var(--glass-alpha))!important;border-color:rgba(255,255,255,.13)!important;backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important;-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important}
-    /* Les commandes et l’historique se fondent dans la sidebar, sans pastilles opaques. */
-    html.glass-mode .alu-sidebar .alu-nav-item,html.glass-mode .alu-sidebar .alu-new-chat,html.glass-mode .alu-sidebar .alu-history-item-container{background:transparent!important;border-color:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important}
-    html.glass-mode .alu-sidebar .alu-nav-item:hover,html.glass-mode .alu-sidebar .alu-new-chat:hover,html.glass-mode .alu-sidebar .alu-history-item-container:hover{background:rgba(255,255,255,.055)!important;border-color:transparent!important}
+    /* Les boutons et l’historique conservent leur style d’origine, même en mode verre. */
     /* ========== MAIN ========== */
     .alu-main {
       position: relative !important;

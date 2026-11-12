@@ -510,10 +510,11 @@
     .settings-slider-head output{color:var(--accent);font-weight:650;font-variant-numeric:tabular-nums}
     #glass-intensity{width:100%;accent-color:var(--accent-strong);cursor:pointer}
     .settings-preview-glass{margin-top:14px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.025));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text-soft);font-size:.78rem}
-    html.glass-mode{--glass-blur:18px;--glass-alpha:.42}
-    html.glass-mode .alu-sidebar,html.glass-mode .alu-topbar,html.glass-mode .alu-composer,html.glass-mode .settings-card,html.glass-mode .settings-category-tile,html.glass-mode .alu-history-item-container,html.glass-mode .alu-new-chat,html.glass-mode .alu-nav-item,html.glass-mode .alu-user-block{background:rgba(30,31,32,var(--glass-alpha))!important;border-color:rgba(255,255,255,.13)!important;backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important;-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important}
-    html.glass-mode #settings-screen{background:rgba(19,19,20,var(--glass-alpha))!important;backdrop-filter:blur(var(--glass-blur)) saturate(165%);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(165%)}
-    html.glass-mode .alu-main{background:rgba(19,19,20,.82)!important}
+    html.glass-mode{--glass-blur:18px;--glass-alpha:.82}
+    /* Le glassmorphism ne touche que le fond de la barre latérale. */
+    html.glass-mode .alu-sidebar{background:rgba(30,31,32,var(--glass-alpha))!important;border-right:1px solid rgba(255,255,255,.13)!important;backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important;-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important}
+    /* Les boutons et éléments interactifs de la sidebar restent bien lisibles. */
+    html.glass-mode .alu-sidebar .alu-nav-item,html.glass-mode .alu-sidebar .alu-new-chat,html.glass-mode .alu-sidebar .alu-history-item-container,html.glass-mode .alu-sidebar .alu-user-block{background:rgba(30,31,32,.92)!important;border-color:rgba(255,255,255,.12)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
     /* ========== MAIN ========== */
     .alu-main {
       position: relative !important;
@@ -2285,7 +2286,7 @@
         const level=Math.max(1,Math.min(30,Number(intensity)||18));
         document.documentElement.classList.toggle("glass-mode",Boolean(enabled));
         document.documentElement.style.setProperty("--glass-blur",(level*1.15).toFixed(1)+"px");
-        document.documentElement.style.setProperty("--glass-alpha",(0.78-level*.018).toFixed(3));
+        document.documentElement.style.setProperty("--glass-alpha",(0.90-level*0.006).toFixed(3));
         glassToggle.checked=Boolean(enabled);glassSlider.value=String(level);glassValue.textContent=String(level);glassWrap.hidden=!enabled;
         localStorage.setItem("alu_glass_enabled",enabled?"1":"0");localStorage.setItem("alu_glass_intensity",String(level));
       }

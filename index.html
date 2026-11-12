@@ -504,17 +504,10 @@
     .settings-switch-track:after{content:"";position:absolute;width:20px;height:20px;left:4px;top:4px;border-radius:50%;background:#fff;transition:transform .2s ease}
     .settings-switch input:checked+.settings-switch-track{background:var(--accent-strong)}
     .settings-switch input:checked+.settings-switch-track:after{transform:translateX(20px);background:#171819}
-    .settings-slider-wrap{padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
-    .settings-slider-wrap[hidden]{display:none}
-    .settings-slider-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;font-size:.85rem}
-    .settings-slider-head output{color:var(--accent);font-weight:650;font-variant-numeric:tabular-nums}
-    #glass-intensity{width:100%;accent-color:var(--accent-strong);cursor:pointer}
-    .settings-preview-glass{margin-top:14px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.025));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--text-soft);font-size:.78rem}
     html.glass-mode{--glass-blur:18px;--glass-alpha:.82}
-    /* Le glassmorphism ne touche que le fond de la barre latérale. */
-    html.glass-mode .alu-sidebar{background:rgba(30,31,32,var(--glass-alpha))!important;border-right:1px solid rgba(255,255,255,.13)!important;backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important;-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important}
-    /* Les boutons et éléments interactifs de la sidebar restent bien lisibles. */
-    html.glass-mode .alu-sidebar .alu-nav-item,html.glass-mode .alu-sidebar .alu-new-chat,html.glass-mode .alu-sidebar .alu-history-item-container,html.glass-mode .alu-sidebar .alu-user-block{background:rgba(30,31,32,.92)!important;border-color:rgba(255,255,255,.12)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+    /* Transparence uniforme sur les principales surfaces de l’interface. */
+    html.glass-mode .alu-sidebar,html.glass-mode .alu-topbar,html.glass-mode .alu-composer,html.glass-mode .alu-model-pill,html.glass-mode .alu-model-menu-bottom,html.glass-mode .settings-card,html.glass-mode .settings-category-tile,html.glass-mode .alu-history-item-container,html.glass-mode .alu-user-block{background:rgba(30,31,32,var(--glass-alpha))!important;border-color:rgba(255,255,255,.13)!important;backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important;-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(165%)!important}
+    html.glass-mode .alu-sidebar .alu-nav-item,html.glass-mode .alu-sidebar .alu-new-chat{background:rgba(30,31,32,.72)!important;border-color:rgba(255,255,255,.10)!important;backdrop-filter:blur(var(--glass-blur))!important;-webkit-backdrop-filter:blur(var(--glass-blur))!important}
     /* ========== MAIN ========== */
     .alu-main {
       position: relative !important;
@@ -1306,7 +1299,7 @@
       <section class="settings-section settings-card settings-category-panel" data-settings-panel="appearance" style="display:none">
          <div class="settings-card-heading"><span class="material-symbols-outlined">blur_on</span><div><h3 id="txt-appearance-panel-title">Mode transparence</h3><p id="txt-appearance-panel-description">Active un effet glassmorphism sur l’interface</p></div></div>
          <div class="settings-appearance-row"><div><strong id="txt-glass-toggle-title">Effet glassmorphism</strong><small id="txt-glass-toggle-description">Rends les panneaux translucides et floutés</small></div><label class="settings-switch" aria-label="Activer le mode transparence"><input type="checkbox" id="glass-mode-toggle"><span class="settings-switch-track"></span></label></div>
-         <div class="settings-slider-wrap" id="glass-intensity-wrap" hidden><div class="settings-slider-head"><label for="glass-intensity" id="txt-glass-intensity">Intensité de l’effet</label><output id="glass-intensity-value" for="glass-intensity">18</output></div><input type="range" id="glass-intensity" min="1" max="30" step="1" value="18"><div class="settings-preview-glass" id="txt-glass-preview">Aperçu de l’effet verre dépoli</div></div>
+         
        </section>
     </div>
   </div>
@@ -2281,18 +2274,14 @@
         });
       });
       document.getElementById("settings-category-back").addEventListener("click", showSettingsCategories);
-      const glassToggle=document.getElementById("glass-mode-toggle"),glassSlider=document.getElementById("glass-intensity"),glassWrap=document.getElementById("glass-intensity-wrap"),glassValue=document.getElementById("glass-intensity-value");
-      function applyGlassSettings(enabled,intensity){
-        const level=Math.max(1,Math.min(30,Number(intensity)||18));
+      const glassToggle=document.getElementById("glass-mode-toggle");
+      function applyGlassSettings(enabled){
         document.documentElement.classList.toggle("glass-mode",Boolean(enabled));
-        document.documentElement.style.setProperty("--glass-blur",(level*1.15).toFixed(1)+"px");
-        document.documentElement.style.setProperty("--glass-alpha",(0.90-level*0.006).toFixed(3));
-        glassToggle.checked=Boolean(enabled);glassSlider.value=String(level);glassValue.textContent=String(level);glassWrap.hidden=!enabled;
-        localStorage.setItem("alu_glass_enabled",enabled?"1":"0");localStorage.setItem("alu_glass_intensity",String(level));
+        glassToggle.checked=Boolean(enabled);
+        localStorage.setItem("alu_glass_enabled",enabled?"1":"0");
       }
-      glassToggle.addEventListener("change",()=>applyGlassSettings(glassToggle.checked,glassSlider.value));
-      glassSlider.addEventListener("input",()=>applyGlassSettings(glassToggle.checked,glassSlider.value));
-      applyGlassSettings(localStorage.getItem("alu_glass_enabled")==="1",localStorage.getItem("alu_glass_intensity")||18);
+      glassToggle.addEventListener("change",()=>applyGlassSettings(glassToggle.checked));
+      applyGlassSettings(localStorage.getItem("alu_glass_enabled")==="1");
 
       async function refreshAccountSettings() {
         document.getElementById("account-settings-name").textContent = currentUser?.firstname || "—";

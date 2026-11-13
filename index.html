@@ -1764,6 +1764,35 @@
       alert("Votre mot de passe a été modifié avec succès.");
     }
 
+    async function deleteAccountWithActiveSession() {
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+      if (userError) throw userError;
+      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+      if (sessionError) throw sessionError;
+      const user = userData?.user;
+      const session = sessionData?.session;
+      if (!user || !session?.access_token || user.id !== currentUser?.id) {
+        throw new Error("Votre session a expiré. Reconnectez-vous avant de supprimer votre compte.");
+      }
+      const confirmed = window.confirm("Dernière confirmation : supprimer définitivement votre compte Aluetoo ? Cette action est irréversible.");
+      if (!confirmed) return;
+      const response = await fetch(SUPABASE_URL + "/functions/v1/aluetoo-delete-account", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + session.access_token,
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || "La suppression du compte a échoué.");
+      localStorage.removeItem("alu_history_" + (user.email || "").toLowerCase());
+      await supabaseClient.auth.signOut({ scope: "local" });
+      alert("Votre compte Aluetoo a été supprimé.");
+      window.location.reload();
+    }
+
     function wireAccountSecurity() {
       const run = async (fn, button) => {
         button.disabled = true;
@@ -1773,7 +1802,22 @@
       };
       document.getElementById("forgot-password-btn").addEventListener("click", () => openAccountSecurityModal("recovery"));
       document.getElementById("change-password-btn").addEventListener("click", () => openAccountSecurityModal("change-password"));
-      document.getElementById("delete-account-btn").addEventListener("click", () => openAccountSecurityModal("delete"));
+      document.getElementById("delete-account-btn").addEventListener("click", async () => {
+        try {
+          const { data, error } = await supabaseClient.auth.getUser();
+          if (error) throw error;
+          const user = data?.user;
+          const isGoogleAccount = user?.app_metadata?.provider === "google" ||
+            (user?.identities || []).some(identity => identity.provider === "google");
+          if (isGoogleAccount) {
+            await deleteAccountWithActiveSession();
+          } else {
+            openAccountSecurityModal("delete");
+          }
+        } catch (error) {
+          alert(error.message || "Impossible de vérifier votre compte.");
+        }
+      });
       document.getElementById("account-send-code-btn").addEventListener("click", (e) => run(sendAccountVerificationCode, e.currentTarget));
       document.getElementById("account-verify-code-btn").addEventListener("click", (e) => run(verifyAccountSecurityCode, e.currentTarget));
       document.getElementById("account-save-password-btn").addEventListener("click", (e) => run(saveAccountNewPassword, e.currentTarget));

@@ -1688,6 +1688,11 @@
         result = await supabaseClient.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + window.location.pathname
         });
+      } else if (accountSecurityFlow === "delete-google") {
+        result = await supabaseClient.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: false }
+        });
       } else {
         result = await supabaseClient.auth.reauthenticate();
       }
@@ -1703,8 +1708,31 @@
       const token = document.getElementById("account-modal-code").value.replace(/\D/g, "").trim();
       if (!token) throw new Error("Saisissez le code reçu par e-mail.");
 
-      // A reauthentication code is a nonce, not a sign-in OTP: do not pass it to verifyOtp().
-      if (accountSecurityFlow === "recovery") {
+      // Signup and Google-account deletion use a real email OTP that creates a verified session.
+      if (accountSecurityFlow === "signup" || accountSecurityFlow === "delete-google") {
+        const { data, error } = await supabaseClient.auth.verifyOtp({
+          email,
+          token,
+          type: accountSecurityFlow === "signup" ? "signup" : "email"
+        });
+        if (error) throw error;
+        if (!data?.session || !data?.user) throw new Error("La vérification n’a pas créé de session. Réessayez.");
+        authSession = data.session;
+        currentUser = {
+          id: data.user.id,
+          firstname: data.user.user_metadata?.display_name || email.split("@")[0],
+          email: data.user.email,
+          picture: data.user.user_metadata?.avatar_url || null
+        };
+        if (accountSecurityFlow === "delete-google") {
+          document.getElementById("account-security-modal").classList.add("hidden");
+          await deleteAccountWithActiveSession();
+          return;
+        }
+        document.getElementById("account-security-modal").classList.add("hidden");
+        startApp();
+        return;
+      } else if (accountSecurityFlow === "recovery") {
         const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type: "recovery" });
         if (error) throw error;
         if (data?.session) authSession = data.session;
@@ -1810,7 +1838,7 @@
           const isGoogleAccount = user?.app_metadata?.provider === "google" ||
             (user?.identities || []).some(identity => identity.provider === "google");
           if (isGoogleAccount) {
-            await deleteAccountWithActiveSession();
+            openAccountSecurityModal("delete-google");
           } else {
             openAccountSecurityModal("delete");
           }
@@ -1866,9 +1894,18 @@
             result = await supabaseClient.auth.signInWithPassword({ email, password });
           }
           if (result.error) throw result.error;
-          if (!result.data.session) {
-            alert("Compte créé. Vérifiez votre boîte e-mail pour confirmer votre adresse, puis connectez-vous.");
+          if (isSignUpMode && !result.data.session) {
+            openAccountSecurityModal("signup");
+            document.getElementById("account-modal-email").value = email;
+            document.getElementById("account-modal-email").readOnly = true;
+            document.getElementById("account-send-code-btn").classList.add("hidden");
+            document.getElementById("account-code-step").classList.remove("hidden");
+            document.getElementById("account-modal-title").textContent = "Confirmer votre adresse e-mail";
+            document.getElementById("account-modal-description").textContent = "Saisissez le code de confirmation envoyé à votre adresse e-mail pour activer votre compte.";
             return;
+          }
+          if (!result.data.session) {
+            throw new Error("La connexion n’a pas créé de session. Vérifiez votre adresse e-mail puis réessayez.");
           }
           authSession = result.data.session;
           currentUser = {

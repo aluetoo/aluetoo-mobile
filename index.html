@@ -1317,7 +1317,7 @@
 
 
    <!-- ACCOUNT SECURITY MODAL -->
-  <div id="account-security-modal" class="fixed inset-0 bg-black/75 z-[80] flex items-center justify-center p-4 hidden">
+  <div id="account-security-modal" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 hidden" style="z-index:120">
     <div class="bg-[#1e1f20] border border-[#45464a] p-6 rounded-2xl w-full max-w-md shadow-2xl">
       <h3 id="account-modal-title" class="text-lg font-semibold mb-2">Sécurité du compte</h3>
       <p id="account-modal-description" class="text-sm text-[#aeb2b8] mb-4">Vérifiez votre adresse e-mail.</p>
@@ -1378,6 +1378,7 @@
     let currentLang = localStorage.getItem("alu_lang") || "fr";
     let accountSecurityFlow = null;
     let accountVerifiedForAction = false;
+    let accountVerifiedNonce = null;
 
     const translations = {
       fr: {
@@ -1655,6 +1656,7 @@
     function openAccountSecurityModal(flow) {
       accountSecurityFlow = flow;
       accountVerifiedForAction = false;
+      accountVerifiedNonce = null;
       const modal = document.getElementById("account-security-modal");
       const emailInput = document.getElementById("account-modal-email");
       emailInput.value = currentUser?.email || document.getElementById("auth-email").value.trim().toLowerCase();
@@ -1705,6 +1707,7 @@
       if (error) throw error;
       if (data?.session) authSession = data.session;
       accountVerifiedForAction = true;
+      accountVerifiedNonce = type === "reauthentication" ? token : null;
       document.getElementById("account-send-code-btn").classList.add("hidden");
 
       if (accountSecurityFlow === "delete") {
@@ -1739,8 +1742,12 @@
       const confirmation = document.getElementById("account-confirm-password").value;
       if (password.length < 8) throw new Error("Le mot de passe doit contenir au moins 8 caractères.");
       if (password !== confirmation) throw new Error("Les deux mots de passe ne correspondent pas.");
-      const { error } = await supabaseClient.auth.updateUser({ password });
+      const attributes = { password };
+      if (accountVerifiedNonce) attributes.nonce = accountVerifiedNonce;
+      const { error } = await supabaseClient.auth.updateUser(attributes);
       if (error) throw error;
+      accountVerifiedForAction = false;
+      accountVerifiedNonce = null;
       document.getElementById("account-security-modal").classList.add("hidden");
       alert("Votre mot de passe a été modifié avec succès.");
     }

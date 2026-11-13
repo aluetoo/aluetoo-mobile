@@ -1700,17 +1700,24 @@
 
     async function verifyAccountSecurityCode() {
       const email = document.getElementById("account-modal-email").value.trim().toLowerCase();
-      const token = document.getElementById("account-modal-code").value.trim().replace(/\s/g, "");
-      if (!/^\d{6,8}$/.test(token)) throw new Error("Entrez le code reçu par e-mail.");
-      const type = accountSecurityFlow === "recovery" ? "recovery" : "reauthentication";
-      const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type });
-      if (error) throw error;
-      if (data?.session) authSession = data.session;
-      accountVerifiedForAction = true;
-      accountVerifiedNonce = type === "reauthentication" ? token : null;
-      document.getElementById("account-send-code-btn").classList.add("hidden");
+      const token = document.getElementById("account-modal-code").value.trim().replace(/\\s/g, "");
+      if (!/^\\d{6,8}$/.test(token)) throw new Error("Entrez le code reçu par e-mail.");
 
-      if (accountSecurityFlow === "delete") {
+      // A reauthentication code is a nonce, not a sign-in OTP: do not pass it to verifyOtp().
+      if (accountSecurityFlow === "recovery") {
+        const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type: "recovery" });
+        if (error) throw error;
+        if (data?.session) authSession = data.session;
+        accountVerifiedForAction = true;
+        accountVerifiedNonce = null;
+      } else if (accountSecurityFlow === "delete") {
+        const password = window.prompt("Pour confirmer la suppression, saisissez votre mot de passe actuel.");
+        if (password === null) return;
+        if (!password) throw new Error("Le mot de passe est requis pour confirmer la suppression.");
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        authSession = data.session;
+        currentUser = data.user;
         const confirmed = window.confirm("Dernière confirmation : supprimer définitivement votre compte Aluetoo ? Cette action est irréversible.");
         if (!confirmed) return;
         const response = await fetch(SUPABASE_URL + "/functions/v1/aluetoo-delete-account", {
@@ -1729,11 +1736,16 @@
         alert("Votre compte Aluetoo a été supprimé.");
         window.location.reload();
         return;
+      } else {
+        // The nonce is validated by Supabase when updateUser({ password, nonce }) is called.
+        accountVerifiedForAction = true;
+        accountVerifiedNonce = token;
       }
 
+      document.getElementById("account-send-code-btn").classList.add("hidden");
       document.getElementById("account-password-step").classList.remove("hidden");
       document.getElementById("account-code-step").classList.add("hidden");
-      document.getElementById("account-modal-description").textContent = "Code vérifié. Choisissez maintenant votre nouveau mot de passe.";
+      document.getElementById("account-modal-description").textContent = "Code reçu. Choisissez maintenant votre nouveau mot de passe.";
     }
 
     async function saveAccountNewPassword() {

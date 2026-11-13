@@ -1700,8 +1700,8 @@
 
     async function verifyAccountSecurityCode() {
       const email = document.getElementById("account-modal-email").value.trim().toLowerCase();
-      const token = document.getElementById("account-modal-code").value.trim().replace(/\s/g, "");
-      if (!/^\d{6,8}$/.test(token)) throw new Error("Entrez le code reçu par e-mail.");
+      const token = document.getElementById("account-modal-code").value.replace(/\D/g, "").trim();
+      if (!token) throw new Error("Saisissez le code reçu par e-mail.");
 
       // A reauthentication code is a nonce, not a sign-in OTP: do not pass it to verifyOtp().
       if (accountSecurityFlow === "recovery") {

@@ -1691,7 +1691,8 @@
       } else if (accountSecurityFlow === "delete-google") {
         // Google-account deletion needs a fresh email OTP login session.
         // reauthenticate() sends a nonce for updateUser(), not a verifyOtp() login code.
-        result = await supabaseClient.auth.signInWithOtp(email, {
+        result = await supabaseClient.auth.signInWithOtp({
+          email,
           options: { shouldCreateUser: false }
         });
       } else {

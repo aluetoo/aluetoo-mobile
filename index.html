@@ -1688,9 +1688,15 @@
         result = await supabaseClient.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + window.location.pathname
         });
+      } else if (accountSecurityFlow === "delete-google") {
+        // Use the email OTP sign-in flow for Google-only accounts.
+        // The Magic Link template must contain {{ .Token }} to send a numeric code.
+        result = await supabaseClient.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: false }
+        });
       } else {
-        // Reauthentication sends a verification OTP, not a magic sign-in link.
-        // This also works for accounts whose only identity is Google.
+        // Password changes use Supabase's dedicated reauthentication nonce.
         result = await supabaseClient.auth.reauthenticate();
       }
       if (result?.error) throw result.error;
@@ -1705,12 +1711,12 @@
       const token = document.getElementById("account-modal-code").value.replace(/\D/g, "").trim();
       if (!token) throw new Error("Saisissez le code reçu par e-mail.");
 
-      // Signup uses its signup OTP. Google deletion uses the reauthentication OTP.
+      // Signup and Google-account deletion both use the standard email OTP.
       if (accountSecurityFlow === "signup" || accountSecurityFlow === "delete-google") {
         const { data, error } = await supabaseClient.auth.verifyOtp({
           email,
           token,
-          type: accountSecurityFlow === "signup" ? "signup" : "reauthentication"
+          type: "email"
         });
         if (error) throw error;
         if (!data?.session || !data?.user) throw new Error("La vérification n’a pas créé de session. Réessayez.");

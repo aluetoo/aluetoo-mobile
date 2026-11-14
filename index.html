@@ -1669,10 +1669,10 @@
       document.getElementById("account-send-code-btn").classList.remove("hidden");
       document.getElementById("account-modal-title").textContent =
         flow === "recovery" ? "Réinitialiser le mot de passe" :
-        (flow === "delete" || flow === "delete-google") ? "Supprimer le compte" : "Changer le mot de passe";
+        flow === "delete" ? "Supprimer le compte" : "Changer le mot de passe";
       document.getElementById("account-modal-description").textContent =
         flow === "recovery" ? "Un code sera envoyé à l’adresse e-mail de votre compte." :
-        (flow === "delete" || flow === "delete-google") ? "Un code de vérification sera envoyé à votre adresse e-mail. Saisissez-le ici pour confirmer votre identité avant la suppression définitive." :
+        flow === "delete" ? "Confirmez votre identité par e-mail avant la suppression définitive." :
         "Pour protéger votre compte, confirmez votre identité avec le code envoyé par e-mail.";
       modal.classList.remove("hidden");
     }
@@ -1688,15 +1688,7 @@
         result = await supabaseClient.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + window.location.pathname
         });
-      } else if (accountSecurityFlow === "delete-google") {
-        // Google-account deletion needs a fresh email OTP login session.
-        // reauthenticate() sends a nonce for updateUser(), not a verifyOtp() login code.
-        result = await supabaseClient.auth.signInWithOtp({
-          email,
-          options: { shouldCreateUser: false }
-        });
       } else {
-        // Password changes use the dedicated reauthentication nonce flow.
         result = await supabaseClient.auth.reauthenticate();
       }
       if (result?.error) throw result.error;
@@ -1711,31 +1703,8 @@
       const token = document.getElementById("account-modal-code").value.replace(/\D/g, "").trim();
       if (!token) throw new Error("Saisissez le code reçu par e-mail.");
 
-      // Signup and Google-account deletion both verify an email OTP login code.
-      if (accountSecurityFlow === "signup" || accountSecurityFlow === "delete-google") {
-        const { data, error } = await supabaseClient.auth.verifyOtp({
-          email,
-          token,
-          type: "email"
-        });
-        if (error) throw error;
-        if (!data?.session || !data?.user) throw new Error("La vérification n’a pas créé de session. Réessayez.");
-        authSession = data.session;
-        currentUser = {
-          id: data.user.id,
-          firstname: data.user.user_metadata?.display_name || email.split("@")[0],
-          email: data.user.email,
-          picture: data.user.user_metadata?.avatar_url || null
-        };
-        if (accountSecurityFlow === "delete-google") {
-          document.getElementById("account-security-modal").classList.add("hidden");
-          await deleteAccountWithActiveSession();
-          return;
-        }
-        document.getElementById("account-security-modal").classList.add("hidden");
-        startApp();
-        return;
-      } else if (accountSecurityFlow === "recovery") {
+      // A reauthentication code is a nonce, not a sign-in OTP: do not pass it to verifyOtp().
+      if (accountSecurityFlow === "recovery") {
         const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type: "recovery" });
         if (error) throw error;
         if (data?.session) authSession = data.session;
@@ -1795,35 +1764,6 @@
       alert("Votre mot de passe a été modifié avec succès.");
     }
 
-    async function deleteAccountWithActiveSession() {
-      const { data: userData, error: userError } = await supabaseClient.auth.getUser();
-      if (userError) throw userError;
-      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-      if (sessionError) throw sessionError;
-      const user = userData?.user;
-      const session = sessionData?.session;
-      if (!user || !session?.access_token || user.id !== currentUser?.id) {
-        throw new Error("Votre session a expiré. Reconnectez-vous avant de supprimer votre compte.");
-      }
-      const confirmed = window.confirm("Dernière confirmation : supprimer définitivement votre compte Aluetoo ? Cette action est irréversible.");
-      if (!confirmed) return;
-      const response = await fetch(SUPABASE_URL + "/functions/v1/aluetoo-delete-account", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + session.access_token,
-          "apikey": SUPABASE_PUBLISHABLE_KEY,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({})
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || "La suppression du compte a échoué.");
-      localStorage.removeItem("alu_history_" + (user.email || "").toLowerCase());
-      await supabaseClient.auth.signOut({ scope: "local" });
-      alert("Votre compte Aluetoo a été supprimé.");
-      window.location.reload();
-    }
-
     function wireAccountSecurity() {
       const run = async (fn, button) => {
         button.disabled = true;
@@ -1833,22 +1773,7 @@
       };
       document.getElementById("forgot-password-btn").addEventListener("click", () => openAccountSecurityModal("recovery"));
       document.getElementById("change-password-btn").addEventListener("click", () => openAccountSecurityModal("change-password"));
-      document.getElementById("delete-account-btn").addEventListener("click", async () => {
-        try {
-          const { data, error } = await supabaseClient.auth.getUser();
-          if (error) throw error;
-          const user = data?.user;
-          const isGoogleAccount = user?.app_metadata?.provider === "google" ||
-            (user?.identities || []).some(identity => identity.provider === "google");
-          if (isGoogleAccount) {
-            openAccountSecurityModal("delete-google");
-          } else {
-            openAccountSecurityModal("delete");
-          }
-        } catch (error) {
-          alert(error.message || "Impossible de vérifier votre compte.");
-        }
-      });
+      document.getElementById("delete-account-btn").addEventListener("click", () => openAccountSecurityModal("delete"));
       document.getElementById("account-send-code-btn").addEventListener("click", (e) => run(sendAccountVerificationCode, e.currentTarget));
       document.getElementById("account-verify-code-btn").addEventListener("click", (e) => run(verifyAccountSecurityCode, e.currentTarget));
       document.getElementById("account-save-password-btn").addEventListener("click", (e) => run(saveAccountNewPassword, e.currentTarget));
@@ -1897,18 +1822,9 @@
             result = await supabaseClient.auth.signInWithPassword({ email, password });
           }
           if (result.error) throw result.error;
-          if (isSignUpMode && !result.data.session) {
-            openAccountSecurityModal("signup");
-            document.getElementById("account-modal-email").value = email;
-            document.getElementById("account-modal-email").readOnly = true;
-            document.getElementById("account-send-code-btn").classList.add("hidden");
-            document.getElementById("account-code-step").classList.remove("hidden");
-            document.getElementById("account-modal-title").textContent = "Confirmer votre adresse e-mail";
-            document.getElementById("account-modal-description").textContent = "Saisissez le code de confirmation envoyé à votre adresse e-mail pour activer votre compte.";
-            return;
-          }
           if (!result.data.session) {
-            throw new Error("La connexion n’a pas créé de session. Vérifiez votre adresse e-mail puis réessayez.");
+            alert("Compte créé. Vérifiez votre boîte e-mail pour confirmer votre adresse, puis connectez-vous.");
+            return;
           }
           authSession = result.data.session;
           currentUser = {

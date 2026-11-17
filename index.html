@@ -1925,7 +1925,7 @@
         reason.style.cssText="white-space:pre-wrap;line-height:1.55;color:#f3dce1;font-size:15px;margin:0 0 18px;";
         const timer=document.createElement("p");timer.style.cssText="font-weight:800;font-size:18px;color:#fda4af;margin:0;";
         panel.append(title,reason,timer);overlay.appendChild(panel);document.body.appendChild(overlay);
-        let interval=null,finished=false;
+        let interval=null,finished=false,lastStatusCheck=0;
         const finish=()=>{if(finished)return;finished=true;if(interval)clearInterval(interval);overlay.remove();banOverlayActive=false;resolve();};
         const update=async()=>{
           if(permanent){
@@ -1935,6 +1935,8 @@
             timer.textContent=secs>0?"Temps restant : "+Math.floor(secs/60)+" min "+(secs%60)+" s":"Le bannissement est terminé. Vous pouvez accéder à votre compte.";
             if(secs===0){finish();return;}
           }
+          if(Date.now()-lastStatusCheck<5000)return;
+          lastStatusCheck=Date.now();
           try {
             const check=await supabaseClient.from("user_controls").select("is_banned,ban_until,ban_permanent").eq("user_id",currentUser.id).maybeSingle();
             if(!check.error && (!check.data?.is_banned || (!check.data.ban_permanent && (!check.data.ban_until || new Date(check.data.ban_until).getTime()<=Date.now())))) finish();

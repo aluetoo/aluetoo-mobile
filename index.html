@@ -2703,26 +2703,26 @@
         const legacyKey = `alu_history_${currentUser.email}`;
         const legacyRaw = localStorage.getItem(legacyKey);
         if (legacyRaw) {
-          let legacy = [];
-          try { legacy = JSON.parse(legacyRaw) || []; } catch (_) {}
-          if (Array.isArray(legacy) && legacy.length) {
-            const cutoff = Date.now() - 15 * 24 * 60 * 60 * 1000;
-            const rows = legacy.filter(chat => Number(chat.timestamp || 0) >= cutoff).map(chat => {
+          let legacy;
+          try { legacy = JSON.parse(legacyRaw); }
+          catch (_) { throw new Error("L’ancien historique local est illisible ; il a été conservé pour éviter toute perte."); }
+          if (!Array.isArray(legacy)) throw new Error("L’ancien historique local a un format inattendu ; il a été conservé.");
+          if (legacy.length) {
+            const rows = legacy.map(chat => {
               const messages = Array.isArray(chat.history) && chat.history.length ? chat.history : [
                 { role:"user", content:chat.prompt || "Ancienne conversation" },
                 { role:"assistant", content:chat.reply || "" }
               ];
-              const stamp = new Date(Number(chat.timestamp) || Date.now()).toISOString();
+              const rawTimestamp = Number(chat.timestamp);
+              const stamp = new Date(Number.isFinite(rawTimestamp) && rawTimestamp > 0 ? rawTimestamp : Date.now()).toISOString();
               return {
                 id: crypto.randomUUID(), user_id: currentUser.id,
-                title: String(chat.prompt || "Ancienne conversation").slice(0,500),
+                title: String(chat.prompt || messages.find(message => message.role === "user")?.content || "Ancienne conversation").slice(0,500),
                 messages, pinned: !!chat.pinned, created_at: stamp, updated_at: stamp
               };
             });
-            if (rows.length) {
-              const { error: importError } = await supabaseClient.from("aluetoo_conversations").insert(rows);
-              if (importError) throw importError;
-            }
+            const { error: importError } = await supabaseClient.from("aluetoo_conversations").insert(rows);
+            if (importError) throw importError;
           }
           localStorage.removeItem(legacyKey);
         }

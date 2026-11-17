@@ -1917,9 +1917,9 @@
         const overlay=document.createElement("div");
         overlay.setAttribute("role","alertdialog");
         overlay.setAttribute("aria-modal","true");
-        overlay.style.cssText="position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);";
+        overlay.style.cssText="position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;z-index:2147483647;background:#171216;display:flex;align-items:center;justify-content:center;padding:0;backdrop-filter:blur(8px);overflow:auto;";
         const panel=document.createElement("section");
-        panel.style.cssText="width:min(440px,100%);background:#241d25;border:1px solid #7f3c4a;border-radius:24px;padding:25px;color:#f9e8eb;box-shadow:0 24px 90px rgba(0,0,0,.7);";
+        panel.style.cssText="display:flex;flex-direction:column;justify-content:center;width:100%;min-width:100%;height:100%;min-height:100vh;min-height:100dvh;margin:0;padding:clamp(28px,7vw,64px);background:#241d25;border:0;border-radius:0;color:#f9e8eb;box-shadow:none;text-align:center;";
         const title=document.createElement("h2");title.textContent="Compte banni";title.style.cssText="font-size:23px;font-weight:800;margin:0 0 14px;color:#fda4af;";
         const reason=document.createElement("p");reason.textContent="Votre compte est banni pour la raison suivante : "+(data.ban_reason||"Non précisée.");
         reason.style.cssText="white-space:pre-wrap;line-height:1.55;color:#f3dce1;font-size:15px;margin:0 0 18px;";

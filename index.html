@@ -1378,7 +1378,6 @@
     let banStatusRealtimeChannel = null;
     let currentLang = localStorage.getItem("alu_lang") || "fr";
     let accountSecurityFlow = null;
-    let accountDeleteUsesEmailOtp = false;
     let accountVerifiedForAction = false;
     let accountVerifiedNonce = null;
 
@@ -1657,7 +1656,6 @@
 
     function openAccountSecurityModal(flow) {
       accountSecurityFlow = flow;
-      accountDeleteUsesEmailOtp = false;
       accountVerifiedForAction = false;
       accountVerifiedNonce = null;
       const modal = document.getElementById("account-security-modal");
@@ -1675,7 +1673,7 @@
         flow === "delete" ? "Supprimer le compte" : "Changer le mot de passe";
       document.getElementById("account-modal-description").textContent =
         flow === "recovery" ? "Un code sera envoyé à l’adresse e-mail de votre compte." :
-        flow === "delete" ? "Confirmez votre identité par e-mail avant la suppression définitive. Si vous vous connectez avec Google, aucun mot de passe ne sera demandé." :
+        flow === "delete" ? "Confirmez votre identité par e-mail avant la suppression définitive." :
         "Pour protéger votre compte, confirmez votre identité avec le code envoyé par e-mail.";
       modal.classList.remove("hidden");
     }
@@ -1691,19 +1689,6 @@
         result = await supabaseClient.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin + window.location.pathname
         });
-      } else if (accountSecurityFlow === "delete") {
-        const { data: userData, error: userError } = await supabaseClient.auth.getUser();
-        if (userError) throw userError;
-        const identities = userData.user?.identities || [];
-        accountDeleteUsesEmailOtp = identities.some(identity => identity.provider === "google");
-        if (accountDeleteUsesEmailOtp) {
-          result = await supabaseClient.auth.signInWithOtp({
-            email,
-            options: { shouldCreateUser: false }
-          });
-        } else {
-          result = await supabaseClient.auth.reauthenticate();
-        }
       } else {
         result = await supabaseClient.auth.reauthenticate();
       }
@@ -1727,21 +1712,13 @@
         accountVerifiedForAction = true;
         accountVerifiedNonce = null;
       } else if (accountSecurityFlow === "delete") {
-        if (accountDeleteUsesEmailOtp) {
-          const { data, error } = await supabaseClient.auth.verifyOtp({ email, token, type: "email" });
-          if (error) throw error;
-          if (!data?.session) throw new Error("La vérification n’a pas ouvert de session. Demandez un nouveau code.");
-          authSession = data.session;
-          currentUser = data.user;
-        } else {
-          const password = window.prompt("Pour confirmer la suppression, saisissez votre mot de passe actuel.");
-          if (password === null) return;
-          if (!password) throw new Error("Le mot de passe est requis pour confirmer la suppression.");
-          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          authSession = data.session;
-          currentUser = data.user;
-        }
+        const password = window.prompt("Pour confirmer la suppression, saisissez votre mot de passe actuel.");
+        if (password === null) return;
+        if (!password) throw new Error("Le mot de passe est requis pour confirmer la suppression.");
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        authSession = data.session;
+        currentUser = data.user;
         const confirmed = window.confirm("Dernière confirmation : supprimer définitivement votre compte Aluetoo ? Cette action est irréversible.");
         if (!confirmed) return;
         const response = await fetch(SUPABASE_URL + "/functions/v1/aluetoo-delete-account", {

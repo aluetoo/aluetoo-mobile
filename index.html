@@ -2671,6 +2671,31 @@
           updated_at: new Date().toISOString()
         }, { onConflict: "id" });
         if (error) throw error;
+        // Generate an AI summary title in the background, without consuming the user's chat quota.
+        if (conversationHistory.filter(message => message.role === "user").length >= 1) {
+          try {
+            const summaryResponse = await fetch(SUPABASE_URL + "/functions/v1/aluetoo-summarize-conversation", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + (authSession?.access_token || ""),
+                "apikey": SUPABASE_PUBLISHABLE_KEY
+              },
+              body: JSON.stringify({ conversationId: currentActiveChatId })
+            });
+            if (summaryResponse.ok) {
+              const summaryData = await summaryResponse.json();
+              if (summaryData.title) {
+                const cached = (window.aluetooConversationCache || []).find(chat => chat.id === currentActiveChatId);
+                if (cached) cached.title = summaryData.title;
+              }
+            } else {
+              console.warn("Résumé IA indisponible pour cette conversation.");
+            }
+          } catch (summaryError) {
+            console.warn("Génération du résumé IA impossible:", summaryError);
+          }
+        }
         await loadSavedConversations();
       } catch (error) {
         console.error("Sauvegarde Supabase de la conversation impossible:", error);
@@ -2764,10 +2789,11 @@
         items.forEach(item => {
           const messages = Array.isArray(item.messages) ? item.messages : [];
           const firstPrompt = messages.find(message => message.role === "user")?.content || item.title || "Conversation";
-          const title = String(firstPrompt).length > 22 ? String(firstPrompt).substring(0,22) + "..." : String(firstPrompt);
+          const summaryTitle = String(item.title || firstPrompt).trim();
+          const title = summaryTitle.length > 28 ? summaryTitle.substring(0, 28) + "..." : summaryTitle;
           const container = document.createElement("div");
           container.className = `alu-history-item-container ${item.pinned ? "pinned" : ""}`;
-          container.dataset.title = String(firstPrompt).toLocaleLowerCase();
+          container.dataset.title = (String(summaryTitle) + " " + String(firstPrompt)).toLocaleLowerCase();
           const textBtn = document.createElement("button");
           textBtn.className = "alu-history-btn-text";
           textBtn.textContent = title;

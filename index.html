@@ -2686,8 +2686,16 @@
             if (summaryResponse.ok) {
               const summaryData = await summaryResponse.json();
               if (summaryData.title) {
+                const cleanTitle = String(summaryData.title).trim().slice(0, 120);
+                // Persist the generated title in Supabase; updating only the local cache
+                // caused the next history reload to restore the original first message.
+                const { error: titleError } = await supabaseClient.from("aluetoo_conversations")
+                  .update({ title: cleanTitle })
+                  .eq("id", currentActiveChatId)
+                  .eq("user_id", currentUser.id);
+                if (titleError) throw titleError;
                 const cached = (window.aluetooConversationCache || []).find(chat => chat.id === currentActiveChatId);
-                if (cached) cached.title = summaryData.title;
+                if (cached) cached.title = cleanTitle;
               }
             } else {
               console.warn("Résumé IA indisponible pour cette conversation.");
@@ -2841,10 +2849,16 @@
               body: JSON.stringify({ conversationId: item.id })
             }).then(response => response.ok ? response.json() : null).then(summaryData => {
               if (!summaryData?.title) return;
-              item.title = summaryData.title;
-              textBtn.textContent = summaryData.title.length > 28
-                ? summaryData.title.substring(0, 28) + "..." : summaryData.title;
-              container.dataset.title = (String(summaryData.title) + " " + String(firstPrompt)).toLocaleLowerCase();
+              const cleanTitle = String(summaryData.title).trim().slice(0, 120);
+              const { error: titleError } = await supabaseClient.from("aluetoo_conversations")
+                .update({ title: cleanTitle })
+                .eq("id", item.id)
+                .eq("user_id", currentUser.id);
+              if (titleError) throw titleError;
+              item.title = cleanTitle;
+              textBtn.textContent = cleanTitle.length > 28
+                ? cleanTitle.substring(0, 28) + "..." : cleanTitle;
+              container.dataset.title = (cleanTitle + " " + String(firstPrompt)).toLocaleLowerCase();
             }).catch(error => console.warn("Résumé IA d'une ancienne conversation impossible:", error));
           }
         });

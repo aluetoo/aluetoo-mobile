@@ -2827,6 +2827,26 @@
           actionsDiv.append(pinIcon, deleteIcon);
           container.append(textBtn, actionsDiv);
           listContainer.appendChild(container);
+
+          // Upgrade older conversations whose title is still just the first user message.
+          if (items.indexOf(item) < 10 && messages.length >= 2 &&
+              String(item.title || "") === String(firstPrompt).slice(0, 500)) {
+            fetch(SUPABASE_URL + "/functions/v1/aluetoo-summarize-conversation", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + (authSession?.access_token || ""),
+                "apikey": SUPABASE_PUBLISHABLE_KEY
+              },
+              body: JSON.stringify({ conversationId: item.id })
+            }).then(response => response.ok ? response.json() : null).then(summaryData => {
+              if (!summaryData?.title) return;
+              item.title = summaryData.title;
+              textBtn.textContent = summaryData.title.length > 28
+                ? summaryData.title.substring(0, 28) + "..." : summaryData.title;
+              container.dataset.title = (String(summaryData.title) + " " + String(firstPrompt)).toLocaleLowerCase();
+            }).catch(error => console.warn("Résumé IA d'une ancienne conversation impossible:", error));
+          }
         });
       } catch (error) {
         console.error("Chargement des conversations Supabase impossible:", error);
